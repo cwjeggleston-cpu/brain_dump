@@ -1,0 +1,1479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Physical Plant Tracker | SCU</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Oswald:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F5F5F5; --paper:#FFFFFF; --ink:#112337; --muted:#585E6A; --line:#E2E5EA; --sub:#F7F9FB;
+  --brand:#194C80; --brand-2:#26598D; --brand-ink:#FFFFFF; --sky:#4AC1F0; --now-bg:#E6F6FD;
+  --green:#65BC7B; --amber:#D99A1E; --danger:#B3362E; --done:#8B929C; --band:#112337; --legal:#5B2A3C;
+  --heat:25,76,128;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0E1A28; --paper:#152538; --ink:#E7EDF4; --muted:#9FB0C3; --line:#243A52; --sub:#11202F;
+    --brand:#5A9BD8; --brand-2:#7AB3E6; --brand-ink:#0E1A28; --sky:#4AC1F0; --now-bg:#123247;
+    --green:#7FCB92; --amber:#E8B44F; --danger:#EC8A82; --done:#6E7F92; --band:#0A1420; --legal:#C98AA0;
+    --heat:74,193,240;
+    color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font-family:"Lato",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.5}
+h1,h2,h3,.pname,.btn,.tab{font-family:"Oswald","Arial Narrow",sans-serif;font-weight:500}
+[hidden]{display:none!important}
+.topbar{background:#FFFFFF;border-bottom:4px solid var(--sky)}
+.topbar .in{max-width:960px;margin:0 auto;padding:12px 18px;display:flex;align-items:center}
+.topbar img{height:44px;width:auto;display:block}
+.topbar .fallback{display:none;font-family:"Oswald",sans-serif;color:#194C80;font-size:19px}
+.band{background:var(--band);color:#FFFFFF}
+.band .in{max-width:960px;margin:0 auto;padding:20px 18px 0}
+.band .row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{font-size:30px;margin:0;letter-spacing:.01em}
+.stats{color:#BFD3E6;font-size:15px}
+.tabs{display:flex;gap:4px;margin-top:14px;overflow-x:auto}
+.tab{border:0;background:transparent;color:#BFD3E6;font-size:17px;padding:9px 16px 10px;border-bottom:4px solid transparent;white-space:nowrap}
+.tab:hover{color:#fff}
+.tab[aria-selected=true]{color:#fff;border-bottom-color:var(--sky)}
+.wrap{max-width:960px;margin:0 auto;padding:22px 18px 80px}
+.narrow{max-width:800px}
+button{font:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:2px solid var(--sky);outline-offset:2px}
+
+.entry{background:var(--paper);border-radius:10px;box-shadow:0 2px 6px rgba(17,35,55,.08);padding:16px;margin-bottom:26px;border-top:4px solid var(--brand)}
+.entry > input{width:100%;font:inherit;font-size:18px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:11px 14px}
+.entry > input:focus{outline:none;border-color:var(--sky);box-shadow:0 0 0 3px rgba(74,193,240,.25)}
+.hint{color:var(--muted);font-size:13.5px;margin-top:9px}
+.hint kbd,.hint code{background:var(--bg);border:1px solid var(--line);padding:0 5px;border-radius:4px;font-family:inherit;font-weight:700;font-size:12.5px}
+.msg{font-size:14px;color:var(--brand);margin-top:6px;min-height:21px;font-weight:700}
+.btn{border:2px solid var(--brand);background:transparent;color:var(--brand);padding:7px 16px;border-radius:6px;font-size:15px;letter-spacing:.02em;white-space:nowrap}
+.btn.primary{background:var(--brand);color:var(--brand-ink)}
+.btn.primary:hover{background:var(--brand-2);border-color:var(--brand-2)}
+.btn.danger{background:var(--danger);border-color:var(--danger);color:#fff}
+.btn.sm{padding:2px 10px;font-size:14px;border-width:1.5px}
+.btn:disabled{opacity:.5;cursor:wait}
+
+section{margin-bottom:26px}
+.sec-head{display:flex;align-items:center;gap:10px;padding:4px 2px 6px;border-bottom:2px solid var(--brand);flex-wrap:wrap}
+.sec-head h2{font-size:21px;margin:0;flex:1;color:var(--brand)}
+@media (prefers-color-scheme: dark){.sec-head h2{color:var(--ink)}}
+.sec-note{color:var(--muted);font-size:13.5px;margin:6px 2px 0}
+.count{color:var(--muted);font-size:14px}
+.now .sec-head{border-color:var(--sky)}
+.legal .sec-head{border-color:var(--legal)}
+.legal .sec-head h2{color:var(--legal)}
+
+.card{background:var(--paper);border-radius:10px;box-shadow:0 2px 6px rgba(17,35,55,.08);margin-top:10px;overflow:hidden}
+.pad{padding:14px 16px}
+.proj-head{display:flex;align-items:center;gap:8px;padding:10px 12px;flex-wrap:wrap}
+.proj.big .proj-head{border-left:5px solid var(--brand)}
+.proj.small .proj-head{border-left:5px solid var(--sky)}
+.proj.matter .proj-head{border-left:5px solid var(--legal)}
+.caret{border:0;background:none;color:var(--muted);width:22px;padding:0;font-size:13px;transition:transform .15s;flex-shrink:0}
+.collapsed > .phead-wrap .caret,.grp.collapsed .caret{transform:rotate(-90deg)}
+.pname{font-size:18px;flex:1;cursor:text;min-width:120px;overflow-wrap:anywhere}
+.size{border:1px solid var(--line);background:var(--bg);color:var(--muted);border-radius:999px;padding:1px 10px;font-size:13px}
+.size.big{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.bar{width:60px;height:6px;background:var(--line);border-radius:3px;overflow:hidden;flex-shrink:0}
+.bar i{display:block;height:100%;background:var(--green)}
+.bar.over i{background:var(--danger)}
+.bar.warn i{background:var(--amber)}
+.pcount{color:var(--muted);font-size:13px;min-width:36px;text-align:right}
+.icon{border:0;background:none;color:var(--muted);padding:4px 6px;border-radius:5px;font-size:15px;line-height:1}
+.icon:hover{color:var(--ink);background:var(--bg)}
+.icon.del:hover{color:var(--danger)}
+.icon.on{color:var(--brand);background:var(--now-bg)}
+.collapsed > .pbody{display:none}
+
+.notes{padding:0 12px 10px 42px}
+.notes textarea,.tnote textarea,.field textarea{width:100%;min-height:70px;font:inherit;font-size:14.5px;color:var(--ink);background:var(--sub);border:1px solid var(--line);border-radius:6px;padding:8px;resize:vertical}
+.tnote{margin-top:6px}
+.tnote textarea{min-height:56px}
+.npeek{margin-top:3px;font-size:13.5px;color:var(--muted);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.npeek:hover{color:var(--ink)}
+
+.grp{border-top:1px solid var(--line);background:var(--sub)}
+.grp-head{display:flex;align-items:center;gap:8px;padding:7px 12px 7px 22px}
+.gname{font-weight:700;flex:1;cursor:text;font-size:15px;color:var(--brand);overflow-wrap:anywhere}
+@media (prefers-color-scheme: dark){.gname{color:var(--brand-2)}}
+.grp.collapsed .tasks,.grp.collapsed .add-row{display:none}
+.grp .task{padding-left:34px;background:var(--paper)}
+.grp .add-row{padding-left:66px;background:var(--paper)}
+
+ul.tasks{list-style:none;margin:0;padding:0}
+.task{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border-top:1px solid var(--line)}
+.card > ul.tasks > .task:first-child{border-top:0}
+.task input[type=checkbox]{width:19px;height:19px;margin:2px 0 0;accent-color:var(--green);flex-shrink:0;cursor:pointer}
+.tmain{flex:1;min-width:0}
+.ttext{cursor:text;overflow-wrap:anywhere}
+.chip{display:inline-block;margin-left:8px;font-size:12.5px;color:var(--brand);border:1px solid var(--line);border-radius:4px;padding:0 6px;vertical-align:1px}
+.chip.lg{color:var(--legal)}
+.now .task{background:var(--now-bg);border-left:4px solid var(--sky)}
+.task.is-done .ttext{color:var(--done);text-decoration:line-through}
+.task.is-now .star{color:var(--sky)}
+.task select,.mini{font:inherit;font-size:13px;max-width:130px;background:var(--paper);color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:2px}
+.edit{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--sky);border-radius:5px;padding:2px 6px}
+.add-row{border-top:1px solid var(--line);padding:5px 12px 7px 44px}
+.add-row input{width:100%;border:0;background:transparent;color:var(--ink);font:inherit;padding:4px 0}
+.add-row input::placeholder{color:var(--muted)}
+.atts{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px}
+.patts{padding:0 12px 10px 42px}
+.att{display:inline-flex;align-items:center;gap:4px;font-size:13px;background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:1px 4px 1px 8px}
+.att button{border:0;background:none;padding:0 3px;font-size:13px}
+.att .open{color:var(--brand);font-weight:700;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.att .x{color:var(--muted)}
+.att .x:hover{color:var(--danger)}
+.empty{color:var(--muted);padding:12px 14px;font-size:14.5px;list-style:none}
+.toggle-done,.linkbtn{border:0;background:none;color:var(--brand);font-weight:700;padding:0}
+.tools{display:flex;gap:18px;flex-wrap:wrap;margin-top:30px;padding-top:14px;border-top:1px solid var(--line)}
+.tools button{border:0;background:none;color:var(--brand);font-weight:700;padding:0;font-size:14.5px}
+.tools button.danger{color:var(--danger)}
+
+/* CAPEX */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:var(--paper);border-radius:10px;box-shadow:0 2px 6px rgba(17,35,55,.08);padding:12px 14px;border-top:4px solid var(--brand)}
+.kpi b{display:block;font-family:"Oswald",sans-serif;font-weight:500;font-size:24px}
+.kpi span{color:var(--muted);font-size:13.5px}
+.kpi.warn{border-top-color:var(--amber)}
+.kpi.bad{border-top-color:var(--danger)}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:4px 0 6px}
+.filters select,.filters input{font:inherit;font-size:14px;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:5px 8px}
+.filters .sp{flex:1}
+.cx .proj-head{border-left:5px solid var(--brand)}
+.cx.st-complete .proj-head{border-left-color:var(--green)}
+.cx.st-hold .proj-head{border-left-color:var(--amber)}
+.status{font:inherit;font-size:13px;border-radius:999px;border:1px solid var(--line);padding:1px 6px;background:var(--bg);color:var(--ink)}
+.money{font-size:13.5px;color:var(--muted);white-space:nowrap}
+.money.over{color:var(--danger);font-weight:700}
+.pri{font-size:12.5px;border-radius:4px;padding:0 6px;border:1px solid var(--line);color:var(--muted)}
+.pri.High{border-color:var(--danger);color:var(--danger)}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px 14px;padding:4px 16px 14px 42px}
+.field label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:3px}
+.field input,.field select{width:100%;font:inherit;font-size:14.5px;color:var(--ink);background:var(--sub);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+.field.wide{grid-column:1/-1}
+.subhead{font-weight:700;font-size:14px;color:var(--muted);padding:8px 16px 4px 42px;border-top:1px solid var(--line);display:flex;gap:10px;align-items:center}
+.subhead span{flex:1}
+table.tbl{width:100%;border-collapse:collapse;font-size:14.5px}
+.tbl th,.tbl td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:right}
+.tbl th:first-child,.tbl td:first-child{text-align:left}
+.tbl th{font-size:13px;color:var(--muted)}
+.when{font-size:13px;color:var(--muted);white-space:nowrap}
+.when.late{color:var(--danger);font-weight:700}
+.field .dur{display:flex;gap:6px}
+.field .dur input{flex:1;min-width:0}
+.field .dur select{width:auto}
+.field .calc{font-size:14.5px;padding:6px 0;font-weight:700}
+.field .calc.late{color:var(--danger)}
+.gantt{overflow-x:auto}
+.g-grid{position:relative;min-width:640px}
+.g-row{display:grid;grid-template-columns:190px 1fr;align-items:center;min-height:30px;border-bottom:1px solid var(--line)}
+.g-row:last-child{border-bottom:0}
+.g-name{font-size:13.5px;padding-right:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.g-name:hover{color:var(--brand)}
+.g-track{position:relative;height:30px}
+.g-bar{position:absolute;top:7px;height:16px;border-radius:4px;background:var(--brand);min-width:4px;cursor:pointer}
+.g-bar.st-complete{background:var(--green)}
+.g-bar.st-hold{background:var(--amber)}
+.g-bar.late{box-shadow:0 0 0 2px var(--danger)}
+.g-head .g-track{height:24px}
+.g-month{position:absolute;top:0;bottom:0;border-left:1px solid var(--line);font-size:11.5px;color:var(--muted);padding-left:4px;white-space:nowrap}
+.g-today{position:absolute;top:0;bottom:0;width:2px;background:var(--danger);opacity:.7;z-index:1;pointer-events:none}
+.g-target{position:absolute;top:4px;height:22px;width:2px;background:var(--danger)}
+
+/* Weekly */
+.paste textarea{width:100%;min-height:150px;font:inherit;font-size:15px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:10px 12px;resize:vertical}
+.paste textarea:focus{outline:none;border-color:var(--sky);box-shadow:0 0 0 3px rgba(74,193,240,.25)}
+.paste .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.paste .row label{font-weight:700;font-size:14px}
+.paste .row input[type=date]{font:inherit;font-size:14.5px;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:5px 8px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:760px){.grid2{grid-template-columns:1fr}}
+.chart{display:flex;align-items:flex-end;gap:4px;height:120px;padding-top:8px}
+.chart .col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;height:100%;justify-content:flex-end;min-width:0}
+.chart .b{width:100%;background:var(--brand);border-radius:3px 3px 0 0;min-height:2px}
+.chart .col.cur .b{background:var(--sky)}
+.chart .n{font-size:11.5px;color:var(--muted)}
+.chart .l{font-size:11px;color:var(--muted);white-space:nowrap}
+.movers{list-style:none;margin:0;padding:0;font-size:14.5px}
+.movers li{padding:5px 0;border-bottom:1px solid var(--line);display:flex;gap:8px}
+.movers li span:first-child{flex:1}
+.up{color:var(--danger);font-weight:700}
+.down{color:var(--green);font-weight:700}
+.heatwrap{overflow-x:auto}
+table.heat{border-collapse:separate;border-spacing:3px;font-size:13px;min-width:100%}
+.heat th{font-weight:400;color:var(--muted);font-size:12px;white-space:nowrap;padding:0 2px}
+.heat th.rh{text-align:left;font-weight:700;color:var(--ink);font-size:13.5px;cursor:pointer;padding-right:8px}
+.heat td{width:44px;height:30px;text-align:center;border-radius:4px;cursor:pointer;color:var(--ink)}
+.heat td.z{color:transparent}
+.heat td.sel,.heat th.sel{outline:2px solid var(--sky)}
+.heat td.tot{background:none;font-weight:700;cursor:default}
+.seg2{display:inline-flex;border:1.5px solid var(--brand);border-radius:6px;overflow:hidden}
+.seg2 button{border:0;background:transparent;color:var(--brand);padding:2px 10px;font-size:14px}
+.seg2 button[aria-pressed=true]{background:var(--brand);color:var(--brand-ink)}
+.recur li{display:block}
+.recur .samp{font-size:13px;color:var(--muted);margin-top:2px}
+.ai-out{white-space:pre-wrap;font-size:15px;line-height:1.55}
+.filterbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:10px 0 0}
+.fchip{background:var(--now-bg);border:1px solid var(--sky);border-radius:999px;padding:1px 10px;font-size:13.5px}
+.wk-head{padding:8px 14px;background:var(--sub);font-weight:700;font-size:14px;color:var(--brand);border-top:1px solid var(--line);display:flex;gap:10px}
+.wk-head span{flex:1}
+.card > .wk-head:first-child{border-top:0}
+
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--band);color:#fff;padding:9px 16px;border-radius:8px;font-size:14.5px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:30;max-width:90vw}
+.toast.show{opacity:1}
+.modal-bg{position:fixed;inset:0;background:rgba(10,20,32,.55);display:flex;align-items:flex-start;justify-content:center;padding:10vh 16px 16px;z-index:20;overflow:auto}
+.modal{background:var(--paper);border-radius:10px;border-top:4px solid var(--brand);width:100%;max-width:440px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.modal h3{margin:0 0 12px;font-size:20px;color:var(--ink)}
+.modal p{margin:0 0 12px;color:var(--muted)}
+.modal label{display:block;font-size:14px;font-weight:700;margin:10px 0 4px}
+.modal input[type=text],.modal select{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.seg label{margin:0;font-weight:400;display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:6px;padding:6px 12px;cursor:pointer}
+.seg input{accent-color:var(--brand)}
+.m-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+.lock{position:fixed;inset:0;z-index:50;background:var(--band);display:flex;align-items:center;justify-content:center;padding:20px}
+.lock .box{background:var(--paper);border-radius:10px;border-top:4px solid var(--sky);width:100%;max-width:380px;padding:22px}
+.lock img{height:40px;display:block;margin-bottom:14px}
+.lock h2{margin:0 0 4px;font-size:22px;color:var(--ink)}
+.lock p{margin:0 0 14px;color:var(--muted);font-size:14.5px}
+.lock input[type=password]{width:100%;font:inherit;font-size:17px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:10px 12px}
+.lock label{display:flex;gap:8px;align-items:center;margin:12px 0 16px;font-size:14.5px;color:var(--muted)}
+.lock .err{color:var(--danger);font-weight:700;font-size:14px;min-height:20px;margin-top:8px}
+.lockbtn{border:1px solid rgba(255,255,255,.35);background:none;color:#BFD3E6;border-radius:6px;padding:2px 10px;font-size:13.5px;margin-left:12px}
+.lockbtn:hover{color:#fff}
+@media (max-width:560px){.bar{display:none}.task select{max-width:88px}.notes,.patts,.fields,.subhead{padding-left:12px}}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="topbar"><div class="in">
+  <img src="https://www.scuhs.edu/wp-content/uploads/Southern-California-University-of-Health-Sciences-Logo.webp" alt="Southern California University of Health Sciences" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+  <span class="fallback">Southern California University of Health Sciences</span>
+</div></div>
+<div class="band"><div class="in">
+  <div class="row"><h1 id="viewTitle">My Tracker</h1><div><span class="stats" id="stats"></span><button class="lockbtn" id="lockBtn" title="Forget the passcode on this device">Lock</button></div></div>
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" data-tab="my" aria-selected="true">My Tracker</button>
+    <button class="tab" role="tab" data-tab="capex" aria-selected="false">CAPEX Projects</button>
+    <button class="tab" role="tab" data-tab="weekly" aria-selected="false">Weekly Tasks</button>
+  </div>
+</div></div>
+
+<!-- ============ MY TRACKER ============ -->
+<div class="wrap narrow" id="view-my">
+  <div class="entry">
+    <input id="quick" autocomplete="off" placeholder="Type a to-do, hit Tab, type the next one…" aria-label="Add a to-do">
+    <div class="hint"><kbd>Tab</kbd> or <kbd>Enter</kbd> adds it &nbsp; <code>#Project</code> files it &nbsp; <code>#Project/Group</code> files it in a group &nbsp; <code>*</code> at the start marks it Now &nbsp; paste a list to add every line</div>
+    <div class="msg" id="msg"></div>
+  </div>
+  <section class="now">
+    <div class="sec-head"><h2>Now</h2><span class="count" id="nowCount"></span></div>
+    <div class="card"><ul class="tasks" id="nowList"></ul></div>
+  </section>
+  <section>
+    <div class="sec-head"><h2>Inbox</h2><span class="count" id="looseCount"></span><button class="btn sm primary" id="sortBtn">Sort into projects</button></div>
+    <div class="card"><ul class="tasks" id="looseList"></ul></div>
+  </section>
+  <section>
+    <div class="sec-head"><h2>Projects</h2><button class="btn sm" id="newProj">New project</button></div>
+    <div id="projList"></div>
+  </section>
+  <section class="legal">
+    <div class="sec-head"><h2>Legal Matters</h2><button class="btn sm" id="newMatter">New matter</button></div>
+    <p class="sec-note">Left out of the copied status summary and never touched by “Sort into projects.”</p>
+    <div id="legalList"></div>
+  </section>
+  <section>
+    <div class="sec-head"><h2>Done</h2><button class="toggle-done" id="toggleDone"></button></div>
+    <div class="card" id="doneBox" hidden><ul class="tasks" id="doneList"></ul></div>
+  </section>
+  <div class="tools">
+    <button id="copyBtn">Copy status summary</button>
+    <button class="exportAll">Download backup</button>
+    <button class="importAll">Restore backup</button>
+    <button id="clearDone" class="danger">Clear done items</button>
+  </div>
+</div>
+
+<!-- ============ CAPEX ============ -->
+<div class="wrap" id="view-capex" hidden>
+  <div class="kpis" id="cxKpis"></div>
+  <section>
+    <div class="sec-head"><h2>Projects</h2><button class="btn sm primary" id="cxNew">New CAPEX project</button></div>
+    <div class="filters" id="cxFilters"></div>
+    <div id="cxList"></div>
+  </section>
+  <section>
+    <div class="sec-head"><h2>Schedule</h2></div>
+    <p class="sec-note">Each bar runs from the scheduled start for the planned duration. The red line is today; a red outline means the finish lands after the target date.</p>
+    <div class="card pad gantt" id="cxGantt"></div>
+  </section>
+  <section>
+    <div class="sec-head"><h2>By building</h2></div>
+    <div class="card pad" id="cxByBldg"></div>
+  </section>
+  <div class="tools">
+    <button id="cxCsv">Download CAPEX list (CSV)</button>
+    <button class="exportAll">Download backup</button>
+    <button class="importAll">Restore backup</button>
+  </div>
+</div>
+
+<!-- ============ WEEKLY ============ -->
+<div class="wrap" id="view-weekly" hidden>
+  <div class="entry paste">
+    <div class="row">
+      <label for="wkDate">Week of</label><input type="date" id="wkDate">
+      <span class="count" id="wkDateNote"></span>
+    </div>
+    <textarea id="wkPaste" placeholder="Paste the week’s list here, one task per line.&#10;Z bldg - AC not cooling in Z-104&#10;WHC: floor drain backing up again&#10;Replace ballast, LRC 2nd floor"></textarea>
+    <div class="row" style="margin:10px 0 0">
+      <button class="btn primary" id="wkAdd">Add to week</button>
+      <span class="hint" style="margin:0">Buildings and categories are tagged automatically. A line like “Z Building:” tags every line under it until the next blank line.</span>
+    </div>
+    <div class="msg" id="wkMsg"></div>
+  </div>
+
+  <div class="kpis" id="wkKpis"></div>
+
+  <section>
+    <div class="sec-head"><h2>Heat map</h2>
+      <div class="seg2" id="wkDim"><button data-dim="building">By building</button><button data-dim="category">By category</button></div>
+    </div>
+    <p class="sec-note">Darker means more tasks. Click a cell or a row name to filter the task list.</p>
+    <div class="card pad heatwrap" id="wkHeat"></div>
+  </section>
+
+  <div class="grid2">
+    <section>
+      <div class="sec-head"><h2>Tasks per week</h2></div>
+      <div class="card pad"><div class="chart" id="wkChart"></div></div>
+    </section>
+    <section>
+      <div class="sec-head"><h2>Movers</h2></div>
+      <div class="card pad"><p class="sec-note" style="margin:0 0 6px">Latest week vs the 4 weeks before it.</p><ul class="movers" id="wkMovers"></ul></div>
+    </section>
+  </div>
+
+  <section>
+    <div class="sec-head"><h2>Recurring issues</h2></div>
+    <p class="sec-note">Same building and category showing up in 2+ different weeks.</p>
+    <div class="card pad"><ul class="movers recur" id="wkRecur"></ul></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Trend analysis</h2><button class="btn sm primary" id="wkAnalyze">Analyze trends</button></div>
+    <div class="card pad"><div class="ai-out" id="wkAI"></div></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Tasks</h2><span class="count" id="wkCount"></span><button class="btn sm" id="wkTag" hidden>Tag unknowns with AI</button></div>
+    <div class="filterbar">
+      <input class="mini" id="wkSearch" placeholder="Search tasks…" style="max-width:260px;font-size:14px;padding:5px 8px">
+      <span id="wkFilterChip"></span>
+    </div>
+    <div id="wkList"></div>
+  </section>
+  <div class="tools">
+    <button id="wkCsv">Download tasks (CSV)</button>
+    <button class="exportAll">Download backup</button>
+    <button class="importAll">Restore backup</button>
+    <button id="wkClearWeek" class="danger">Delete a week…</button>
+  </div>
+</div>
+
+<input type="file" id="importFile" accept="application/json" hidden>
+<input type="file" id="attFile" multiple hidden>
+<div class="modal-bg" id="modalBg" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <h3 id="mTitle"></h3>
+    <div id="mBody"></div>
+    <div class="m-actions"><button class="btn" id="mCancel">Cancel</button><button class="btn primary" id="mOk">OK</button></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<div class="lock" id="lock" hidden>
+  <div class="box">
+    <img src="https://www.scuhs.edu/wp-content/uploads/Southern-California-University-of-Health-Sciences-Logo.webp" alt="Southern California University of Health Sciences" onerror="this.remove()">
+    <h2>Physical Plant Tracker</h2>
+    <p>Enter the passcode to open your tracker.</p>
+    <input type="password" id="lockPass" autocomplete="current-password" aria-label="Passcode">
+    <label><input type="checkbox" id="lockRemember" checked> Remember on this device</label>
+    <button class="btn primary" id="lockGo" style="width:100%">Unlock</button>
+    <div class="err" id="lockErr"></div>
+  </div>
+</div>
+<script>
+/* ---------- server storage + passcode (Netlify Functions + Blobs) ---------- */
+const PASS_KEY = 'scu-tracker-pass';
+let PASS = localStorage.getItem(PASS_KEY) || sessionStorage.getItem(PASS_KEY) || '';
+function relock() { localStorage.removeItem(PASS_KEY); sessionStorage.removeItem(PASS_KEY); location.reload(); }
+async function api(method, params, body) {
+  const r = await fetch('/api/data?' + new URLSearchParams(params), { method, headers: { 'x-tracker-passcode': PASS, 'content-type': 'text/plain' }, body, cache: 'no-store' });
+  if (r.status === 401) { relock(); throw new Error('locked'); }
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r;
+}
+window.storage = {
+  async get(key) { const r = await api('GET', { key }); return { key, value: await r.text(), shared: false }; },
+  async set(key, value) { await api('PUT', { key }, value); return { key, value, shared: false }; },
+  async delete(key) { await api('DELETE', { key }); return { key, deleted: true, shared: false }; },
+  async list(prefix = '') { const r = await api('GET', { list: prefix }); const j = await r.json(); return { keys: j.keys, prefix, shared: false }; }
+};
+window.__unlocked = new Promise(resolve => {
+  const show = err => { document.getElementById('lock').hidden = false; document.getElementById('lockErr').textContent = err || ''; const i = document.getElementById('lockPass'); i.value = ''; i.focus(); };
+  const check = async () => {
+    try {
+      const r = await fetch('/api/data?ping=1', { headers: { 'x-tracker-passcode': PASS }, cache: 'no-store' });
+      if (r.ok) return true;
+      if (r.status === 401) return false;
+      throw new Error('HTTP ' + r.status);
+    } catch (e) { show('Can’t reach the server. Check your connection and try again.'); return null; }
+  };
+  const go = async () => {
+    const btn = document.getElementById('lockGo'); PASS = document.getElementById('lockPass').value;
+    if (!PASS) return;
+    btn.disabled = true; btn.textContent = 'Checking…';
+    const ok = await check();
+    btn.disabled = false; btn.textContent = 'Unlock';
+    if (ok === false) return show('That passcode didn’t work.');
+    if (!ok) return;
+    (document.getElementById('lockRemember').checked ? localStorage : sessionStorage).setItem(PASS_KEY, PASS);
+    document.getElementById('lock').hidden = true; resolve();
+  };
+  document.addEventListener('DOMContentLoaded', async () => {
+    document.getElementById('lockGo').onclick = go;
+    document.getElementById('lockPass').onkeydown = e => { if (e.key === 'Enter') go(); };
+    document.getElementById('lockBtn').onclick = relock;
+    if (!PASS) return show();
+    const r = await check();
+    if (r === true) resolve(); else if (r === false) show('Your saved passcode no longer works. Enter the current one.');
+  });
+});
+</script>
+<script>
+/* ================= core ================= */
+const KEY = 'tracker-v1', CKEY = 'capex-v1', WKEY = 'weekly-v1';
+const MAX_FILE = 3 * 1024 * 1024;
+let S = { tasks: [], projects: [], collapsed: {}, notesOpen: {}, showDone: false, tab: 'my' };
+let C = { projects: [], f: { fy: '', status: '', building: '', q: '' }, open: {} };
+let W = { entries: [], dim: 'building', filter: null, ai: '', aiAt: 0 };
+let loadedOK = false;
+const $ = id => document.getElementById(id);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const isLegal = p => p && p.kind === 'legal';
+const proj = id => S.projects.find(p => p.id === id);
+
+const BUILDINGS = ['M', 'Z', 'D', 'F', 'L', 'T', 'WHC', 'Pavilion', 'LRC', 'Legacy Hall', 'Outdoor / Grounds', 'Tempe', 'Campus-wide'];
+function normBldg(v) {
+  v = String(v || '').trim().replace(/\s+/g, ' ').replace(/^(?:bldg\.?|building)\s+/i, '').replace(/\s+(?:bldg\.?|building)$/i, '');
+  if (!v) return '';
+  const known = [...BUILDINGS, ...C.projects.map(p => p.building), ...W.entries.map(e => e.building)].filter(Boolean);
+  return known.find(k => k.toLowerCase() === v.toLowerCase()) || (v.length <= 2 ? v.toUpperCase() : v);
+}
+const CATS = ['HVAC', 'Plumbing', 'Electrical / Lighting', 'Doors / Locks / Access', 'Custodial', 'Grounds', 'Life Safety', 'Roof / Envelope', 'Interior repairs', 'Moves / Events / Setup', 'IT / AV', 'Pest', 'Vendor / Admin', 'Other'];
+const CX_CATS = ['HVAC', 'Roofing', 'Electrical', 'Plumbing', 'ADA / Accessibility', 'Life Safety', 'Interiors / Renovation', 'Paving / Grounds', 'Envelope', 'Technology / AV', 'Security', 'Other'];
+const CX_STATUS = ['Planning', 'Design', 'Bid / Procurement', 'In progress', 'Closeout', 'Complete', 'On hold'];
+
+/* ---------- storage ---------- */
+const timers = {};
+function persist(key, obj) {
+  clearTimeout(timers[key]);
+  timers[key] = setTimeout(async () => {
+    timers[key] = null;
+    if (!window.storage) return;
+    try { await window.storage.set(key, JSON.stringify(obj), false); }
+    catch (e) { toast('Could not save. Check your connection; your changes are still on screen.'); }
+  }, 250);
+}
+window.addEventListener('pagehide', () => {
+  [[KEY, () => S], [CKEY, () => C], [WKEY, () => W]].forEach(([k, get]) => { if (timers[k]) { clearTimeout(timers[k]); fetch('/api/data?key=' + k, { method: 'PUT', keepalive: true, headers: { 'x-tracker-passcode': PASS, 'content-type': 'text/plain' }, body: JSON.stringify(get()) }); } });
+});
+const save = () => persist(KEY, S), saveC = () => persist(CKEY, C), saveW = () => persist(WKEY, W);
+async function getKey(k) { try { const r = await window.storage.get(k, false); return r && r.value ? JSON.parse(r.value) : null; } catch (e) { return null; } }
+function migrate() {
+  S.collapsed = S.collapsed || {}; S.notesOpen = S.notesOpen || {}; S.tab = S.tab || 'my';
+  S.projects.forEach(p => { p.kind = p.kind || 'project'; p.groups = p.groups || []; p.notes = p.notes || ''; p.attachments = p.attachments || []; p.size = p.size || 'small'; });
+  S.tasks.forEach(t => { t.groupId = t.groupId || null; t.attachments = t.attachments || []; t.notes = t.notes || ''; });
+  C.f = Object.assign({ fy: '', status: '', building: '', q: '' }, C.f || {}); C.open = C.open || {};
+  C.projects.forEach(p => { p.start = p.start || ''; p.durN = p.durN || 0; p.durU = p.durU || 'weeks'; p.attachments = p.attachments || []; p.steps = p.steps || []; p.notes = p.notes || ''; p.steps.forEach(s => s.notes = s.notes || ''); });
+  W.entries.forEach(e => { e.notes = e.notes || ''; });
+}
+async function load() {
+  if (window.storage) {
+    const a = await getKey(KEY), b = await getKey(CKEY), c = await getKey(WKEY);
+    if (a) { S = Object.assign(S, a); loadedOK = true; }
+    if (b) C = Object.assign(C, b);
+    if (c) W = Object.assign(W, c);
+  }
+  migrate();
+  if (loadedOK) cleanupAttachments();
+}
+
+/* ---------- attachments ---------- */
+const memAtt = {};
+async function attPut(id, dataUrl) {
+  if (window.storage) { const r = await window.storage.set('att:' + id, dataUrl, false); if (!r) throw new Error('save failed'); }
+  else memAtt[id] = dataUrl;
+}
+async function attGet(id) { if (window.storage) { try { const r = await window.storage.get('att:' + id, false); return r && r.value; } catch (e) { return null; } } return memAtt[id]; }
+async function attDel(id) { try { if (window.storage) await window.storage.delete('att:' + id, false); else delete memAtt[id]; } catch (e) {} }
+const allOwners = () => [...S.tasks, ...S.projects, ...C.projects];
+async function cleanupAttachments() {
+  try {
+    const used = new Set(); allOwners().forEach(o => (o.attachments || []).forEach(a => used.add(a.id)));
+    const r = await window.storage.list('att:', false);
+    for (const k of (r && r.keys) || []) { const key = typeof k === 'string' ? k : k.key; if (key && !used.has(key.slice(4))) await window.storage.delete(key, false); }
+  } catch (e) {}
+}
+let attOwner = null, attSave = null;
+function pickFiles(owner, saver) { attOwner = owner; attSave = saver; $('attFile').value = ''; $('attFile').click(); }
+$('attFile').onchange = async e => {
+  const files = [...e.target.files]; if (!files.length || !attOwner) return;
+  let added = 0;
+  for (const f of files) {
+    if (f.size > MAX_FILE) { toast(`${f.name} is over 3 MB. Put a link in the notes instead.`); continue; }
+    try {
+      const dataUrl = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(f); });
+      const id = uid(); await attPut(id, dataUrl);
+      attOwner.attachments.push({ id, name: f.name, size: f.size, type: f.type }); added++;
+    } catch (err) { toast(`Could not attach ${f.name}. Storage may be full.`); }
+  }
+  if (added) { attSave(); rerender(); toast(`Attached ${added} file${added > 1 ? 's' : ''}.`); }
+};
+async function openAtt(a) {
+  try {
+    const d = await attGet(a.id); if (!d) throw 0;
+    const url = URL.createObjectURL(await (await fetch(d)).blob());
+    const link = document.createElement('a'); link.href = url; link.download = a.name; document.body.appendChild(link); link.click(); link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  } catch (e) { toast('That file could not be opened. It may have been removed.'); }
+}
+const fmtSize = n => n > 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB';
+function attChips(owner, saver) {
+  const wrap = document.createElement('div'); wrap.className = 'atts';
+  owner.attachments.forEach(a => {
+    const c = document.createElement('span'); c.className = 'att';
+    c.innerHTML = `<button class="open" title="Download ${esc(a.name)}">📄 ${esc(a.name)}</button><span class="count">${fmtSize(a.size)}</span><button class="x" aria-label="Remove ${esc(a.name)}">✕</button>`;
+    c.querySelector('.open').onclick = () => openAtt(a);
+    c.querySelector('.x').onclick = async () => {
+      if (!(await confirmBox(`Remove “${a.name}”?`, 'Remove'))) return;
+      owner.attachments = owner.attachments.filter(x => x.id !== a.id); attDel(a.id); saver(); rerender();
+    };
+    wrap.appendChild(c);
+  });
+  return wrap;
+}
+
+/* ---------- notes on any item ---------- */
+const openNotes = new Set();
+let focusNote = null;
+function noteButton(item) {
+  const b = document.createElement('button');
+  b.className = 'icon' + (item.notes || openNotes.has(item.id) ? ' on' : '');
+  b.title = item.notes ? 'Notes' : 'Add a note'; b.setAttribute('aria-label', b.title); b.textContent = '📝';
+  b.onclick = () => toggleNote(item);
+  return b;
+}
+function toggleNote(item) {
+  if (openNotes.has(item.id)) openNotes.delete(item.id); else { openNotes.add(item.id); focusNote = item.id; }
+  rerender();
+}
+function noteArea(item, saver, placeholder = 'Quick note: who you talked to, what’s next, numbers…') {
+  if (openNotes.has(item.id)) {
+    const d = document.createElement('div'); d.className = 'tnote';
+    d.innerHTML = `<textarea data-note="${item.id}" placeholder="${esc(placeholder)}" aria-label="Note">${esc(item.notes)}</textarea>`;
+    const ta = d.querySelector('textarea');
+    ta.oninput = () => { item.notes = ta.value; saver(); };
+    ta.onkeydown = e => { if (e.key === 'Escape') { openNotes.delete(item.id); rerender(); } };
+    return d;
+  }
+  if (item.notes) {
+    const p = document.createElement('div'); p.className = 'npeek'; p.title = 'Open note';
+    p.textContent = '📝 ' + item.notes.split('\n').filter(Boolean).join('  /  ');
+    p.onclick = () => toggleNote(item);
+    return p;
+  }
+  return null;
+}
+function afterRender() {
+  if (!focusNote) return;
+  const ta = document.querySelector(`textarea[data-note="${focusNote}"]`);
+  if (ta) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
+  focusNote = null;
+}
+
+/* ---------- dialogs ---------- */
+function modal({ title, text, fields = [], okText = 'OK', danger = false }) {
+  return new Promise(resolve => {
+    $('mTitle').textContent = title;
+    const body = $('mBody'); body.innerHTML = text ? `<p>${esc(text)}</p>` : '';
+    fields.forEach((f, i) => {
+      if (f.type === 'choice') {
+        body.insertAdjacentHTML('beforeend', `<label>${esc(f.label)}</label><div class="seg">` +
+          f.options.map(o => `<label><input type="radio" name="f${i}" value="${esc(o.value)}" ${o.value === f.value ? 'checked' : ''}> ${esc(o.label)}</label>`).join('') + '</div>');
+      } else if (f.type === 'select') {
+        body.insertAdjacentHTML('beforeend', `<label for="f${i}">${esc(f.label)}</label><select id="f${i}">` +
+          f.options.map(o => `<option ${o === f.value ? 'selected' : ''}>${esc(o)}</option>`).join('') + '</select>');
+      } else if (f.type === 'date') {
+        body.insertAdjacentHTML('beforeend', `<label for="f${i}">${esc(f.label)}</label><input type="date" id="f${i}" value="${esc(f.value || '')}" style="width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px">`);
+      } else {
+        body.insertAdjacentHTML('beforeend', `<label for="f${i}">${esc(f.label)}</label><input type="text" id="f${i}" value="${esc(f.value || '')}" placeholder="${esc(f.placeholder || '')}">`);
+      }
+    });
+    const ok = $('mOk'); ok.textContent = okText; ok.className = 'btn ' + (danger ? 'danger' : 'primary');
+    $('modalBg').hidden = false;
+    const first = body.querySelector('input[type=text]'); (first || ok).focus();
+    const close = val => { $('modalBg').hidden = true; document.removeEventListener('keydown', onKey, true); resolve(val); };
+    const collect = () => {
+      const out = {};
+      for (const [i, f] of fields.entries()) {
+        out[f.key] = f.type === 'choice' ? (body.querySelector(`input[name=f${i}]:checked`) || {}).value : body.querySelector('#f' + i).value.trim();
+        if (f.required && !out[f.key]) { body.querySelector('#f' + i).focus(); return null; }
+      }
+      return out;
+    };
+    const onKey = e => { if (e.key === 'Escape') { e.preventDefault(); close(null); } if (e.key === 'Enter' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SELECT') { e.preventDefault(); const v = collect(); if (v) close(v); } };
+    document.addEventListener('keydown', onKey, true);
+    ok.onclick = () => { const v = collect(); if (v) close(v); };
+    $('mCancel').onclick = () => close(null);
+    $('modalBg').onclick = e => { if (e.target === $('modalBg')) close(null); };
+  });
+}
+const confirmBox = (text, okText = 'Delete') => modal({ title: 'Are you sure?', text, okText, danger: true }).then(v => !!v);
+
+function msg(text, el = 'msg') { const m = $(el); m.textContent = text; setTimeout(() => { if (m.textContent === text) m.textContent = ''; }, 4000); }
+let toastTimer;
+function toast(text) { const t = $('toast'); t.textContent = text; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 3000); }
+function inlineEdit(el, value, commit, saver = save) {
+  const input = document.createElement('input'); input.className = 'edit'; input.value = value;
+  el.replaceWith(input); input.focus(); input.select();
+  let finished = false;
+  const done = ok => { if (finished) return; finished = true; const v = input.value.trim(); if (ok && v) commit(v); saver(); rerender(); };
+  input.onkeydown = e => { if (e.key === 'Enter') done(true); if (e.key === 'Escape') done(false); };
+  input.onblur = () => done(true);
+}
+function tabAdder(input, onAdd) {
+  input.addEventListener('keydown', e => {
+    if ((e.key === 'Tab' && !e.shiftKey) || e.key === 'Enter') {
+      if (!input.value.trim()) return;
+      e.preventDefault(); const v = input.value; input.value = ''; onAdd(v);
+    }
+  });
+}
+function addRow(placeholder, key, onAdd, saver = save) {
+  const d = document.createElement('div'); d.className = 'add-row';
+  d.innerHTML = `<input placeholder="${esc(placeholder)}" aria-label="${esc(placeholder)}" data-key="${key}">`;
+  tabAdder(d.querySelector('input'), v => { onAdd(v.trim()); saver(); rerender(); setTimeout(() => { const i = document.querySelector(`.add-row input[data-key="${key}"]`); if (i) i.focus(); }, 0); });
+  return d;
+}
+async function askClaude(prompt) {
+  const res = await fetch('/api/claude', {
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'x-tracker-passcode': PASS },
+    body: JSON.stringify({ max_tokens: 1000, messages: [{ role: 'user', content: prompt }] })
+  });
+  if (res.status === 401) { relock(); throw new Error('locked'); }
+  if (!res.ok) { toast(res.status === 504 || res.status === 502 ? 'Claude took too long to answer. Try again, or try fewer items.' : 'The AI request failed (' + res.status + ').'); throw new Error('HTTP ' + res.status); }
+  const data = await res.json();
+  return (data.content || []).map(c => c.text || '').join('').trim();
+}
+const parseJSON = txt => { txt = txt.replace(/```json|```/g, ''); return JSON.parse(txt.slice(txt.indexOf('{'), txt.lastIndexOf('}') + 1)); };
+function download(name, text, type) {
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+}
+const csvCell = v => { v = String(v ?? ''); return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v; };
+
+/* ---------- tabs ---------- */
+const TITLES = { my: 'My Tracker', capex: 'Physical Plant CAPEX', weekly: 'Physical Plant Weekly Tasks' };
+document.querySelectorAll('.tab').forEach(b => b.onclick = () => { S.tab = b.dataset.tab; save(); rerender(); window.scrollTo(0, 0); });
+function rerender() {
+  document.querySelectorAll('.tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === S.tab)));
+  ['my', 'capex', 'weekly'].forEach(t => $('view-' + t).hidden = t !== S.tab);
+  $('viewTitle').textContent = TITLES[S.tab];
+  if (S.tab === 'my') renderMy(); else if (S.tab === 'capex') renderCapex(); else renderWeekly();
+  afterRender();
+}
+
+/* ================= MY TRACKER ================= */
+function findProject(name) { const n = name.trim().toLowerCase(); return S.projects.find(p => p.name.toLowerCase() === n); }
+function ensureProject(name, size = 'small', kind = 'project') {
+  let p = findProject(name);
+  if (!p) { p = { id: uid(), name: name.trim(), size, kind, groups: [], notes: '', attachments: [], created: Date.now() }; S.projects.push(p); }
+  return p;
+}
+function ensureGroup(p, name) {
+  let g = p.groups.find(g => g.name.toLowerCase() === name.trim().toLowerCase());
+  if (!g) { g = { id: uid(), name: name.trim() }; p.groups.push(g); }
+  return g;
+}
+function matchPrefix(rest, names) {
+  return names.slice().sort((a, b) => b.length - a.length).find(n => {
+    if (!rest.toLowerCase().startsWith(n.toLowerCase())) return false;
+    const next = rest.charAt(n.length); return next === '' || next === ' ' || next === '/';
+  });
+}
+function parseLine(raw) {
+  let line = raw.trim(); if (!line) return null;
+  let now = false, projectName = null, groupName = null;
+  if (/^[*!]\s*/.test(line)) { now = true; line = line.replace(/^[*!]\s*/, ''); }
+  line = line.replace(/^[-•]\s*/, '');
+  if (line.startsWith('#') && line.length > 1) {
+    let rest = line.slice(1);
+    const hit = matchPrefix(rest, S.projects.map(p => p.name));
+    const tok = hit || (rest.match(/^[^\s/]+/) || [''])[0];
+    projectName = (hit || tok.replace(/[-_]/g, ' ')) || null;
+    rest = rest.slice(tok.length);
+    if (rest.startsWith('/')) {
+      rest = rest.slice(1);
+      const p = projectName && findProject(projectName);
+      const ghit = p && matchPrefix(rest, p.groups.map(g => g.name));
+      const gtok = ghit || (rest.match(/^\S+/) || [''])[0];
+      groupName = (ghit || gtok.replace(/[-_]/g, ' ')) || null;
+      rest = rest.slice(gtok.length);
+    }
+    line = rest.trim();
+  }
+  if (!line) return null;
+  return { text: line, projectName, groupName, now };
+}
+function addTask(text, projectId = null, now = false, groupId = null) {
+  S.tasks.push({ id: uid(), text, projectId, groupId, now, done: false, created: Date.now(), doneAt: null, attachments: [], notes: '' });
+}
+function addLine(raw) {
+  const l = parseLine(raw); if (!l) return null;
+  const p = l.projectName ? ensureProject(l.projectName) : null;
+  const g = p && l.groupName ? ensureGroup(p, l.groupName) : null;
+  addTask(l.text, p ? p.id : null, l.now, g ? g.id : null);
+  return l.now ? 'Now' : p ? p.name + (g ? ' › ' + g.name : '') : 'Inbox';
+}
+const quick = $('quick');
+tabAdder(quick, v => { const where = addLine(v); if (where) { msg(`Added to ${where}`); save(); rerender(); } quick.focus(); });
+quick.addEventListener('paste', e => {
+  const text = (e.clipboardData || window.clipboardData).getData('text');
+  if (!/\n/.test(text)) return;
+  e.preventDefault();
+  const n = text.split(/\r?\n/).map(addLine).filter(Boolean).length;
+  if (n) { msg(`Added ${n} items`); save(); rerender(); }
+});
+
+async function sortInbox() {
+  const inbox = S.tasks.filter(t => !t.done && !t.projectId);
+  if (!inbox.length) return toast('Inbox is empty — nothing to sort.');
+  const btn = $('sortBtn'); btn.disabled = true; btn.textContent = 'Sorting…';
+  const regular = S.projects.filter(p => !isLegal(p));
+  const existing = regular.map(p => `${p.name} (${p.size}${p.groups.length ? '; groups: ' + p.groups.map(g => g.name).join(', ') : ''})`).join('\n') || 'none yet';
+  const prompt = `You organize a busy university facilities and risk leader's to-do inbox into projects.
+Existing projects:
+${existing}
+
+Inbox items:
+${inbox.map((t, i) => `${i}. ${t.text}`).join('\n')}
+
+For each item: lightly clean up the wording (short, keep names and specifics). Put it in an existing project when it clearly fits, and in an existing group within that project if one clearly fits. If 2+ items share a theme with no matching project, create a short project name. True one-offs get project null. Do not create new groups.
+For any NEW project, size "big" if multi-week or multi-step, else "small".
+
+Respond with ONLY JSON, no prose, no code fences:
+{"tasks":[{"i":0,"text":"...","project":"Name or null","group":"Name or null"}],"newProjects":[{"name":"...","size":"small|big"}]}`;
+  try {
+    const out = parseJSON(await askClaude(prompt));
+    (out.newProjects || []).forEach(p => p && p.name && !findProject(p.name) && ensureProject(p.name, p.size === 'big' ? 'big' : 'small'));
+    let moved = 0;
+    (out.tasks || []).forEach(r => {
+      const t = inbox[r.i]; if (!t) return;
+      if (r.text && r.text.trim()) t.text = r.text.trim();
+      if (r.project && r.project !== 'null') {
+        const p = findProject(r.project); if (!p || isLegal(p)) return;
+        t.projectId = p.id;
+        const g = r.group && p.groups.find(g => g.name.toLowerCase() === String(r.group).toLowerCase());
+        t.groupId = g ? g.id : null; moved++;
+      }
+    });
+    save(); rerender(); toast(`Filed ${moved} of ${inbox.length} items into projects.`);
+  } catch (e) { toast('Sorting failed. Nothing changed — try again.'); }
+  finally { btn.disabled = false; btn.textContent = 'Sort into projects'; }
+}
+
+function moveOptions(t) {
+  const cur = `${t.projectId || ''}|${t.groupId || ''}`;
+  const opt = (v, label) => `<option value="${v}" ${v === cur ? 'selected' : ''}>${esc(label)}</option>`;
+  const block = (list, label) => list.length ? `<optgroup label="${label}">` + list.map(p =>
+    opt(`${p.id}|`, p.name) + p.groups.map(g => opt(`${p.id}|${g.id}`, `  ${p.name} › ${g.name}`)).join('')).join('') + '</optgroup>' : '';
+  return opt('|', 'Inbox') + block(S.projects.filter(p => !isLegal(p)), 'Projects') + block(S.projects.filter(isLegal), 'Legal Matters');
+}
+function where(t) {
+  const p = proj(t.projectId); if (!p) return '';
+  const g = p.groups.find(g => g.id === t.groupId);
+  return `<span class="chip ${isLegal(p) ? 'lg' : ''}">${esc(p.name + (g ? ' › ' + g.name : ''))}</span>`;
+}
+let lastDeleted = null;
+function taskRow(t, opts = {}) {
+  const li = document.createElement('li');
+  li.className = 'task' + (t.now && !t.done ? ' is-now' : '') + (t.done ? ' is-done' : '');
+  li.innerHTML = `
+    <input type="checkbox" ${t.done ? 'checked' : ''} aria-label="Mark done">
+    <div class="tmain"><div class="ttext"><span class="t">${esc(t.text)}</span>${opts.showProject ? where(t) : ''}</div></div>
+    <span class="nslot"></span>
+    ${t.done ? '' : `<button class="icon star" title="${t.now ? 'Remove from Now' : 'Move to Now'}" aria-label="Toggle Now">${t.now ? '★' : '☆'}</button>
+    <button class="icon clip" title="Attach a file" aria-label="Attach a file">📎</button>
+    <select aria-label="Move to">${moveOptions(t)}</select>`}
+    <button class="icon del" title="Delete" aria-label="Delete">✕</button>`;
+  li.querySelector('.nslot').replaceWith(noteButton(t));
+  const main = li.querySelector('.tmain');
+  const na = noteArea(t, save); if (na) main.appendChild(na);
+  if (t.attachments.length) main.appendChild(attChips(t, save));
+  li.querySelector('input').onchange = e => { t.done = e.target.checked; t.doneAt = t.done ? Date.now() : null; if (t.done) t.now = false; save(); rerender(); };
+  const star = li.querySelector('.star'); if (star) star.onclick = () => { t.now = !t.now; save(); rerender(); };
+  const clip = li.querySelector('.clip'); if (clip) clip.onclick = () => pickFiles(t, save);
+  const sel = li.querySelector('select'); if (sel) sel.onchange = e => { const [p, g] = e.target.value.split('|'); t.projectId = p || null; t.groupId = g || null; save(); rerender(); };
+  li.querySelector('.del').onclick = () => { S.tasks = S.tasks.filter(x => x.id !== t.id); save(); rerender(); lastDeleted = t; toast('Deleted. Press Ctrl+Z to undo.'); };
+  if (!t.done) li.querySelector('.ttext').onclick = e => { if (e.target.closest('.chip')) return; inlineEdit(e.currentTarget, t.text, v => { t.text = v; }); };
+  return li;
+}
+
+function projectCard(p) {
+  const legal = isLegal(p);
+  const all = S.tasks.filter(t => t.projectId === p.id);
+  const doneN = all.filter(t => t.done).length;
+  const pct = all.length ? Math.round(doneN / all.length * 100) : 0;
+  const box = document.createElement('div');
+  box.className = 'card proj ' + (legal ? 'matter' : p.size) + (S.collapsed[p.id] ? ' collapsed' : '');
+  box.innerHTML = `
+    <div class="phead-wrap"><div class="proj-head">
+      <button class="caret" aria-label="Collapse">▼</button>
+      <span class="pname" title="Click to rename">${esc(p.name)}</span>
+      ${legal ? '' : `<button class="size ${p.size}" title="Switch size">${p.size === 'big' ? 'Big' : 'Small'}</button>`}
+      <div class="bar" title="${pct}% done"><i style="width:${pct}%"></i></div>
+      <span class="pcount">${doneN}/${all.length}</span>
+      <button class="btn sm addgrp">+ Group</button>
+      <button class="icon notes-t ${S.notesOpen[p.id] || p.notes ? 'on' : ''}" title="${legal ? 'Matter' : 'Project'} notes" aria-label="Notes">📝</button>
+      <button class="icon clip" title="Attach a file to this ${legal ? 'matter' : 'project'}" aria-label="Attach a file">📎</button>
+      <button class="icon del" title="Delete" aria-label="Delete">✕</button>
+    </div></div>
+    <div class="pbody"></div>`;
+  const body = box.querySelector('.pbody');
+  if (S.notesOpen[p.id]) {
+    const n = document.createElement('div'); n.className = 'notes';
+    n.innerHTML = `<textarea placeholder="${legal ? 'Claim or case number, counsel, carrier, key dates…' : 'Contacts, links, decisions, context…'}" aria-label="Notes">${esc(p.notes)}</textarea>`;
+    n.querySelector('textarea').oninput = e => { p.notes = e.target.value; save(); };
+    body.appendChild(n);
+  } else if (p.notes) {
+    const n = document.createElement('div'); n.className = 'notes';
+    const pk = document.createElement('div'); pk.className = 'npeek'; pk.textContent = '📝 ' + p.notes.split('\n').filter(Boolean).join('  /  ');
+    pk.onclick = () => { S.notesOpen[p.id] = true; save(); rerender(); };
+    n.appendChild(pk); body.appendChild(n);
+  }
+  if (p.attachments.length) { const a = document.createElement('div'); a.className = 'patts'; a.appendChild(attChips(p, save)); body.appendChild(a); }
+
+  const ul = document.createElement('ul'); ul.className = 'tasks';
+  const open = all.filter(t => !t.done && !t.now);
+  open.filter(t => !t.groupId || !p.groups.some(g => g.id === t.groupId)).forEach(t => ul.appendChild(taskRow(t)));
+  const nowN = all.filter(t => !t.done && t.now).length;
+  if (nowN) { const n = document.createElement('li'); n.className = 'empty'; n.textContent = `+ ${nowN} in Now`; ul.appendChild(n); }
+  body.appendChild(ul);
+  body.appendChild(addRow(`Add to ${p.name}…`, p.id, v => addTask(v, p.id)));
+
+  p.groups.forEach(g => {
+    const gAll = all.filter(t => t.groupId === g.id);
+    const gd = document.createElement('div');
+    gd.className = 'grp' + (S.collapsed['g:' + g.id] ? ' collapsed' : '');
+    gd.innerHTML = `<div class="grp-head">
+        <button class="caret" aria-label="Collapse group">▼</button>
+        <span class="gname" title="Click to rename">${esc(g.name)}</span>
+        <span class="pcount">${gAll.filter(t => t.done).length}/${gAll.length}</span>
+        <button class="icon del" title="Delete group" aria-label="Delete group">✕</button>
+      </div><ul class="tasks"></ul>`;
+    const gul = gd.querySelector('ul');
+    gAll.filter(t => !t.done && !t.now).forEach(t => gul.appendChild(taskRow(t)));
+    gd.appendChild(addRow(`Add to ${g.name}…`, g.id, v => addTask(v, p.id, false, g.id)));
+    gd.querySelector('.caret').onclick = () => { S.collapsed['g:' + g.id] = !S.collapsed['g:' + g.id]; save(); rerender(); };
+    gd.querySelector('.gname').onclick = e => inlineEdit(e.currentTarget, g.name, v => { g.name = v; });
+    gd.querySelector('.del').onclick = async () => {
+      if (!(await confirmBox(`Delete group “${g.name}”? Its items stay in ${p.name}, just ungrouped.`))) return;
+      S.tasks.forEach(t => { if (t.groupId === g.id) t.groupId = null; });
+      p.groups = p.groups.filter(x => x.id !== g.id); save(); rerender();
+    };
+    body.appendChild(gd);
+  });
+
+  const h = box.querySelector('.proj-head');
+  h.querySelector('.caret').onclick = () => { S.collapsed[p.id] = !S.collapsed[p.id]; save(); rerender(); };
+  const sz = h.querySelector('.size'); if (sz) sz.onclick = () => { p.size = p.size === 'big' ? 'small' : 'big'; save(); rerender(); };
+  h.querySelector('.pname').onclick = e => inlineEdit(e.currentTarget, p.name, v => { p.name = v; });
+  h.querySelector('.notes-t').onclick = () => { S.notesOpen[p.id] = !S.notesOpen[p.id]; S.collapsed[p.id] = false; save(); rerender(); };
+  h.querySelector('.clip').onclick = () => pickFiles(p, save);
+  h.querySelector('.addgrp').onclick = async () => {
+    const v = await modal({ title: `New group in ${p.name}`, fields: [{ key: 'name', label: 'Group name', placeholder: legal ? 'e.g. Discovery requests' : 'e.g. Building M, Vendors to call', required: true }], okText: 'Add group' });
+    if (!v) return;
+    const g = ensureGroup(p, v.name); S.collapsed[p.id] = false; save(); rerender();
+    setTimeout(() => { const i = document.querySelector(`.add-row input[data-key="${g.id}"]`); if (i) i.focus(); }, 0);
+  };
+  h.querySelector('.del').onclick = async () => {
+    const what = legal ? 'matter' : 'project';
+    if (!(await confirmBox(`Delete ${what} “${p.name}”? Its open items move to the Inbox. Its notes and ${what}-level files are removed.`))) return;
+    S.tasks.forEach(t => { if (t.projectId === p.id) { t.projectId = null; t.groupId = null; } });
+    p.attachments.forEach(a => attDel(a.id));
+    S.projects = S.projects.filter(x => x.id !== p.id); save(); rerender();
+  };
+  return box;
+}
+
+function renderMy() {
+  const open = S.tasks.filter(t => !t.done);
+  const nowT = open.filter(t => t.now);
+  const doneT = S.tasks.filter(t => t.done).sort((a, b) => b.doneAt - a.doneAt);
+  const doneWeek = doneT.filter(t => t.doneAt > Date.now() - 7 * 864e5).length;
+  $('stats').textContent = `${open.length} open, ${doneWeek} done this week`;
+
+  const nl = $('nowList'); nl.innerHTML = '';
+  nowT.forEach(t => nl.appendChild(taskRow(t, { showProject: true })));
+  if (!nowT.length) nl.innerHTML = '<li class="empty">Star ☆ anything you’re actively working on and it shows up here.</li>';
+  $('nowCount').textContent = nowT.length || '';
+
+  const loose = open.filter(t => !t.projectId && !t.now);
+  const ll = $('looseList'); ll.innerHTML = '';
+  loose.forEach(t => ll.appendChild(taskRow(t)));
+  if (!loose.length) ll.innerHTML = '<li class="empty">Inbox is clear. Anything you add without a #Project lands here.</li>';
+  $('looseCount').textContent = loose.length || '';
+  $('sortBtn').hidden = !loose.length;
+
+  const regular = S.projects.filter(p => !isLegal(p)).sort((a, b) => a.size === b.size ? a.name.localeCompare(b.name) : a.size === 'big' ? -1 : 1);
+  const pl = $('projList'); pl.innerHTML = '';
+  if (!regular.length) pl.innerHTML = '<div class="empty">No projects yet. Use New project, or type #ProjectName before a to-do.</div>';
+  regular.forEach(p => pl.appendChild(projectCard(p)));
+
+  const legal = S.projects.filter(isLegal).sort((a, b) => a.name.localeCompare(b.name));
+  const lg = $('legalList'); lg.innerHTML = '';
+  if (!legal.length) lg.innerHTML = '<div class="empty">No matters yet. Use New matter to start one.</div>';
+  legal.forEach(p => lg.appendChild(projectCard(p)));
+
+  $('toggleDone').textContent = doneT.length ? (S.showDone ? 'Hide' : `Show ${doneT.length}`) : '';
+  $('doneBox').hidden = !S.showDone || !doneT.length;
+  const dl = $('doneList'); dl.innerHTML = '';
+  doneT.slice(0, 150).forEach(t => dl.appendChild(taskRow(t, { showProject: true })));
+}
+
+$('newProj').onclick = async () => {
+  const v = await modal({ title: 'New project', fields: [
+    { key: 'name', label: 'Project name', placeholder: 'e.g. Phone tree', required: true },
+    { key: 'size', label: 'Size', type: 'choice', value: 'small', options: [{ value: 'small', label: 'Small' }, { value: 'big', label: 'Big (multi-week, many steps)' }] }
+  ], okText: 'Create project' });
+  if (!v) return;
+  if (findProject(v.name)) return toast(`“${v.name}” already exists.`);
+  const p = ensureProject(v.name, v.size || 'small'); save(); rerender();
+  setTimeout(() => { const i = document.querySelector(`.add-row input[data-key="${p.id}"]`); if (i) i.focus(); }, 0);
+};
+$('newMatter').onclick = async () => {
+  const v = await modal({ title: 'New legal matter', fields: [{ key: 'name', label: 'Matter name', placeholder: 'e.g. Slip-and-fall claim, Lot B', required: true }], okText: 'Create matter' });
+  if (!v) return;
+  if (findProject(v.name)) return toast(`“${v.name}” already exists.`);
+  const p = ensureProject(v.name, 'small', 'legal'); S.notesOpen[p.id] = true; save(); rerender();
+  setTimeout(() => { const i = document.querySelector(`.add-row input[data-key="${p.id}"]`); if (i) i.focus(); }, 0);
+};
+$('sortBtn').onclick = sortInbox;
+$('toggleDone').onclick = () => { S.showDone = !S.showDone; save(); rerender(); };
+
+function summary() {
+  const d = new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  const visible = t => !isLegal(proj(t.projectId));
+  const label = t => { const p = proj(t.projectId); if (!p) return ''; const g = p.groups.find(g => g.id === t.groupId); return ` (${p.name}${g ? ' › ' + g.name : ''})`; };
+  const line = (t, ind = '') => `${ind}- ${t.text}` + (t.notes ? `\n${ind}    Note: ${t.notes.replace(/\n+/g, ' / ')}` : '');
+  let out = `Status — ${d}\n`;
+  const open = S.tasks.filter(t => !t.done && visible(t));
+  const nowT = open.filter(t => t.now);
+  if (nowT.length) out += `\nIn progress:\n` + nowT.map(t => line({ ...t, text: t.text + label(t) })).join('\n') + '\n';
+  S.projects.filter(p => !isLegal(p)).forEach(p => {
+    const all = S.tasks.filter(t => t.projectId === p.id); if (!all.length) return;
+    out += `\n${p.name} [${p.size}, ${all.filter(t => t.done).length}/${all.length} done]:\n`;
+    const op = all.filter(t => !t.done && !t.now);
+    const ung = op.filter(t => !t.groupId);
+    if (ung.length) out += ung.map(t => line(t)).join('\n') + '\n';
+    p.groups.forEach(g => { const gi = op.filter(t => t.groupId === g.id); if (gi.length) out += `  ${g.name}:\n` + gi.map(t => line(t, '  ')).join('\n') + '\n'; });
+    if (!op.length) out += '- (nothing else open)\n';
+  });
+  const loose = open.filter(t => !t.projectId && !t.now);
+  if (loose.length) out += `\nOther:\n` + loose.map(t => line(t)).join('\n') + '\n';
+  const wk = S.tasks.filter(t => t.done && visible(t) && t.doneAt > Date.now() - 7 * 864e5);
+  if (wk.length) out += `\nDone this week:\n` + wk.map(t => `- ${t.text}`).join('\n') + '\n';
+  return out;
+}
+$('copyBtn').onclick = async () => {
+  try { await navigator.clipboard.writeText(summary()); }
+  catch { const ta = document.createElement('textarea'); ta.value = summary(); document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); }
+  toast('Summary copied (legal matters left out).');
+};
+$('clearDone').onclick = async () => {
+  const doneT = S.tasks.filter(t => t.done); if (!doneT.length) return toast('No done items to clear.');
+  if (!(await confirmBox(`Permanently remove ${doneT.length} done item${doneT.length > 1 ? 's' : ''} and their attachments?`, 'Clear'))) return;
+  doneT.forEach(t => t.attachments.forEach(a => attDel(a.id)));
+  S.tasks = S.tasks.filter(t => !t.done); save(); rerender(); toast('Done items cleared.');
+};
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'z' && lastDeleted && !/INPUT|TEXTAREA/.test(document.activeElement.tagName)) {
+    S.tasks.push(lastDeleted); lastDeleted = null; save(); rerender(); toast('Restored.');
+  }
+});
+
+/* ================= CAPEX ================= */
+const money = n => (n < 0 ? '-$' : '$') + Math.abs(Math.round(n || 0)).toLocaleString();
+const num = v => Number(String(v ?? '').replace(/[$,\s]/g, '')) || 0;
+function cxEnd(p) {
+  const n = num(p.durN); if (!p.start || !n) return '';
+  const d = fromIso(p.start);
+  if (p.durU === 'months') d.setMonth(d.getMonth() + n);
+  else d.setDate(d.getDate() + (p.durU === 'weeks' ? 7 * n : n));
+  d.setDate(d.getDate() - 1);
+  return isoLocal(d);
+}
+const fmtD = iso => iso ? fromIso(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+const durTxt = p => num(p.durN) ? `${num(p.durN)} ${num(p.durN) === 1 ? p.durU.replace(/s$/, '') : p.durU}` : '';
+const finishOf = p => cxEnd(p) || p.target || '';
+const isLate = p => { const end = cxEnd(p); return !!(end && p.target && end > p.target); };
+const isPastDue = p => { const f = finishOf(p); return !!(f && p.status !== 'Complete' && fromIso(f) < new Date(new Date().toDateString())); };
+const stClass = s => s === 'Complete' ? 'st-complete' : s === 'On hold' ? 'st-hold' : '';
+function cxFiltered() {
+  const f = C.f, q = f.q.toLowerCase();
+  return C.projects.filter(p => (!f.fy || p.fy === f.fy) && (!f.status || (f.status === 'Active' ? !['Complete', 'On hold'].includes(p.status) : p.status === f.status)) &&
+    (!f.building || (p.building || '').toLowerCase().includes(f.building.toLowerCase())) && (!q || (p.name + ' ' + p.vendor + ' ' + p.notes).toLowerCase().includes(q)));
+}
+function renderCapex() {
+  const list = cxFiltered();
+  const budget = list.reduce((s, p) => s + num(p.budget), 0), spent = list.reduce((s, p) => s + num(p.spent), 0);
+  const active = list.filter(p => !['Complete', 'On hold'].includes(p.status)).length;
+  const over = list.filter(p => num(p.budget) && num(p.spent) > num(p.budget));
+  const late = list.filter(isPastDue);
+  const today = isoLocal(new Date()), in30 = isoLocal(new Date(Date.now() + 30 * 864e5));
+  const soon = list.filter(p => p.start && p.start >= today && p.start <= in30 && p.status !== 'Complete');
+  $('stats').textContent = `${C.projects.length} projects tracked`;
+  $('cxKpis').innerHTML = `
+    <div class="kpi"><b>${money(budget)}</b><span>Budget${C.f.fy ? ' in ' + esc(C.f.fy) : ''}</span></div>
+    <div class="kpi"><b>${money(spent)}</b><span>Spent, ${budget ? Math.round(spent / budget * 100) : 0}% of budget</span></div>
+    <div class="kpi"><b>${money(budget - spent)}</b><span>Remaining</span></div>
+    <div class="kpi"><b>${active}</b><span>Active projects</span></div>
+    <div class="kpi ${over.length ? 'bad' : ''}"><b>${over.length}</b><span>Over budget</span></div>
+    <div class="kpi"><b>${soon.length}</b><span>Starting in the next 30 days</span></div>
+    <div class="kpi ${late.length ? 'warn' : ''}"><b>${late.length}</b><span>Past finish date, not complete</span></div>`;
+
+  const fys = [...new Set(C.projects.map(p => p.fy).filter(Boolean))].sort();
+  const sel = (id, label, opts, val) => `<select id="${id}" aria-label="${label}"><option value="">${label}</option>${opts.map(o => `<option ${o === val ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
+  $('cxFilters').innerHTML = sel('cfFy', 'All fiscal years', fys, C.f.fy) + sel('cfSt', 'All statuses', ['Active', ...CX_STATUS], C.f.status) +
+    `<input id="cfB" placeholder="Building…" aria-label="Filter by building" value="${esc(C.f.building)}" style="width:130px">` + `<input id="cfQ" placeholder="Search…" value="${esc(C.f.q)}"><span class="sp"></span>` +
+    (C.f.fy || C.f.status || C.f.building || C.f.q ? '<button class="linkbtn" id="cfClear">Clear filters</button>' : '');
+  $('cfFy').onchange = e => { C.f.fy = e.target.value; saveC(); rerender(); };
+  $('cfSt').onchange = e => { C.f.status = e.target.value; saveC(); rerender(); };
+  $('cfB').onchange = e => { C.f.building = e.target.value.trim(); saveC(); rerender(); };
+  $('cfQ').onchange = e => { C.f.q = e.target.value.trim(); saveC(); rerender(); };
+  if ($('cfClear')) $('cfClear').onclick = () => { C.f = { fy: '', status: '', building: '', q: '' }; saveC(); rerender(); };
+
+  const order = s => s === 'Complete' ? 2 : s === 'On hold' ? 1 : 0;
+  const pri = { High: 0, Medium: 1, Low: 2 };
+  const sorted = [...list].sort((a, b) => order(a.status) - order(b.status) || (a.start || '9999').localeCompare(b.start || '9999') || (pri[a.priority] ?? 1) - (pri[b.priority] ?? 1) || a.name.localeCompare(b.name));
+  const box = $('cxList'); box.innerHTML = '';
+  if (!C.projects.length) box.innerHTML = '<div class="empty">No CAPEX projects yet. Use New CAPEX project to add the first one.</div>';
+  else if (!sorted.length) box.innerHTML = '<div class="empty">No projects match these filters.</div>';
+  sorted.forEach(p => box.appendChild(cxCard(p)));
+  renderGantt(sorted);
+
+  const by = {};
+  C.projects.filter(p => !C.f.fy || p.fy === C.f.fy).forEach(p => { const k = p.building || 'Unassigned'; by[k] = by[k] || { n: 0, b: 0, s: 0 }; by[k].n++; by[k].b += num(p.budget); by[k].s += num(p.spent); });
+  const rows = Object.entries(by).sort((a, b) => b[1].b - a[1].b);
+  $('cxByBldg').innerHTML = rows.length ? `<table class="tbl"><thead><tr><th>Building</th><th>Projects</th><th>Budget</th><th>Spent</th><th>Remaining</th></tr></thead><tbody>` +
+    rows.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${v.n}</td><td>${money(v.b)}</td><td>${money(v.s)}</td><td>${money(v.b - v.s)}</td></tr>`).join('') + '</tbody></table>'
+    : '<div class="empty" style="padding:0">Totals by building show up once you add projects.</div>';
+}
+function renderGantt(list) {
+  const el = $('cxGantt');
+  const rows = list.filter(p => p.start && cxEnd(p));
+  const unsched = list.length - rows.length;
+  if (!rows.length) { el.innerHTML = `<div class="empty" style="padding:0">${list.length ? 'Give a project a scheduled start and duration to see it here.' : 'Projects with a start date and duration show up here.'}</div>`; return; }
+  const today = new Date(new Date().toDateString());
+  let lo = fromIso(rows.reduce((m, p) => p.start < m ? p.start : m, rows[0].start));
+  let hi = fromIso(rows.reduce((m, p) => { const e = [cxEnd(p), p.target].filter(Boolean).sort().pop(); return e > m ? e : m; }, cxEnd(rows[0])));
+  if (today < lo) lo = new Date(today); if (today > hi) hi = new Date(today);
+  lo = new Date(lo.getFullYear(), lo.getMonth(), 1); hi = new Date(hi.getFullYear(), hi.getMonth() + 1, 1);
+  const span = hi - lo, pos = d => ((d - lo) / span * 100).toFixed(2) + '%';
+  let months = '', m = new Date(lo), nMonths = 0;
+  while (m < hi) { nMonths++; m.setMonth(m.getMonth() + 1); }
+  m = new Date(lo);
+  const step = nMonths > 18 ? 3 : nMonths > 9 ? 2 : 1, idx = { i: 0 };
+  while (m < hi) { if (idx.i++ % step === 0) months += `<div class="g-month" style="left:${pos(m)}">${m.toLocaleDateString(undefined, { month: 'short' })}${m.getMonth() === 0 || idx.i === 1 ? ' ' + String(m.getFullYear()).slice(2) : ''}</div>`; m.setMonth(m.getMonth() + 1); }
+  const todayLine = `<div class="g-today" style="left:${pos(today)}"></div>`;
+  el.innerHTML = `<div class="g-grid">
+    <div class="g-row g-head"><div></div><div class="g-track">${months}${todayLine}</div></div>` +
+    rows.map(p => { const s = fromIso(p.start), e = fromIso(cxEnd(p)); e.setDate(e.getDate() + 1);
+      const tgt = p.target ? fromIso(p.target) : null;
+      return `<div class="g-row"><div class="g-name" data-id="${p.id}" title="${esc(p.name)}">${esc(p.name)}</div><div class="g-track">${months.replace(/>[^<]*<\/div>/g, '></div>')}${todayLine}
+        <div class="g-bar ${stClass(p.status)} ${isLate(p) ? 'late' : ''}" data-id="${p.id}" style="left:${pos(s)};width:calc(${pos(e)} - ${pos(s)})" title="${esc(p.name)}: ${fmtD(p.start)} to ${fmtD(cxEnd(p))} (${durTxt(p)})${p.target ? ', target ' + fmtD(p.target) : ''}"></div>
+        ${tgt ? `<div class="g-target" style="left:${pos(tgt)}" title="Target ${fmtD(p.target)}"></div>` : ''}</div></div>`; }).join('') +
+    `</div>` + (unsched ? `<div class="count" style="margin-top:8px">${unsched} project${unsched > 1 ? 's' : ''} not scheduled yet.</div>` : '');
+  el.querySelectorAll('[data-id]').forEach(n => n.onclick = () => { C.open[n.dataset.id] = true; saveC(); rerender();
+    const card = [...document.querySelectorAll('#cxList .cx')].find(c => c.dataset.id === n.dataset.id); if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+}
+function cxCard(p) {
+  const b = num(p.budget), s = num(p.spent), pct = b ? Math.min(100, Math.round(s / b * 100)) : 0, isOver = b && s > b;
+  const stepsDone = p.steps.filter(x => x.done).length;
+  const box = document.createElement('div');
+  box.className = `card proj cx ${stClass(p.status)}` + (C.open[p.id] ? '' : ' collapsed'); box.dataset.id = p.id;
+  box.innerHTML = `
+    <div class="phead-wrap"><div class="proj-head">
+      <button class="caret" aria-label="Expand">▼</button>
+      <span class="pname" title="Click to rename">${esc(p.name)}</span>
+      ${p.building ? `<span class="chip">${esc(p.building)}</span>` : ''}
+      ${p.priority === 'High' ? '<span class="pri High">High</span>' : ''}
+      <select class="status" aria-label="Status">${CX_STATUS.map(o => `<option ${o === p.status ? 'selected' : ''}>${o}</option>`).join('')}</select>
+      ${p.start ? `<span class="when ${isLate(p) || isPastDue(p) ? 'late' : ''}" title="${isLate(p) ? 'Finishes after target date' : ''}">${fromIso(p.start).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}${durTxt(p) ? ', ' + durTxt(p) : ''}</span>` : '<span class="when">Not scheduled</span>'}
+      <span class="money ${isOver ? 'over' : ''}">${money(s)} of ${money(b)}</span>
+      <div class="bar ${isOver ? 'over' : pct > 85 ? 'warn' : ''}" title="${b ? Math.round(s / b * 100) : 0}% spent"><i style="width:${pct}%"></i></div>
+      ${p.steps.length ? `<span class="pcount">${stepsDone}/${p.steps.length}</span>` : ''}
+      <button class="icon clip" title="Attach a file" aria-label="Attach a file">📎</button>
+      <button class="icon del" title="Delete" aria-label="Delete">✕</button>
+    </div></div>
+    <div class="pbody">
+      <div class="fields">
+        <div class="field"><label>Building</label><input data-k="building" value="${esc(p.building)}" placeholder="e.g. Z, WHC, Tempe"></div>
+        <div class="field"><label>Category</label><select data-k="category"><option value="">Choose…</option>${CX_CATS.map(o => `<option ${o === p.category ? 'selected' : ''}>${o}</option>`).join('')}</select></div>
+        <div class="field"><label>Fiscal year</label><input data-k="fy" value="${esc(p.fy)}" placeholder="e.g. FY26-27"></div>
+        <div class="field"><label>Priority</label><select data-k="priority">${['High', 'Medium', 'Low'].map(o => `<option ${o === p.priority ? 'selected' : ''}>${o}</option>`).join('')}</select></div>
+        <div class="field"><label>Budget</label><input data-k="budget" inputmode="decimal" value="${b ? b.toLocaleString() : ''}" placeholder="$0"></div>
+        <div class="field"><label>Spent to date</label><input data-k="spent" inputmode="decimal" value="${s ? s.toLocaleString() : ''}" placeholder="$0"></div>
+        <div class="field"><label>Vendor / contractor</label><input data-k="vendor" value="${esc(p.vendor)}"></div>
+        <div class="field"><label>Scheduled start</label><input type="date" data-k="start" value="${esc(p.start)}"></div>
+        <div class="field"><label>How long it will take</label><div class="dur"><input data-k="durN" inputmode="numeric" value="${num(p.durN) || ''}" placeholder="0"><select data-k="durU">${['days', 'weeks', 'months'].map(u => `<option ${u === p.durU ? 'selected' : ''}>${u}</option>`).join('')}</select></div></div>
+        <div class="field"><label>Estimated finish</label><div class="calc ${isLate(p) ? 'late' : ''}">${cxEnd(p) ? fmtD(cxEnd(p)) + (isLate(p) ? ' (after target)' : '') : '<span class="count">Set a start and duration</span>'}</div></div>
+        <div class="field"><label>Target completion (deadline)</label><input type="date" data-k="target" value="${esc(p.target)}"></div>
+        <div class="field wide"><label>Project notes</label><textarea data-k="notes" placeholder="Scope, funding source, PO numbers, decisions…">${esc(p.notes)}</textarea></div>
+      </div>
+      <div class="patts"></div>
+      <div class="subhead"><span>Steps and to-dos</span></div>
+      <ul class="tasks"></ul>
+    </div>`;
+  const body = box.querySelector('.pbody');
+  body.querySelectorAll('[data-k]').forEach(el => {
+    const k = el.dataset.k;
+    if (k === 'notes') { el.oninput = () => { p.notes = el.value; saveC(); }; return; }
+    el.onchange = () => { p[k] = (k === 'budget' || k === 'spent' || k === 'durN') ? num(el.value) : k === 'building' ? normBldg(el.value) : el.value; saveC(); rerender(); };
+  });
+  if (p.attachments.length) body.querySelector('.patts').appendChild(attChips(p, saveC)); else body.querySelector('.patts').remove();
+  const ul = body.querySelector('ul');
+  p.steps.forEach(st => {
+    const li = document.createElement('li'); li.className = 'task' + (st.done ? ' is-done' : '');
+    li.innerHTML = `<input type="checkbox" ${st.done ? 'checked' : ''} aria-label="Mark done"><div class="tmain"><div class="ttext">${esc(st.text)}</div></div><span class="nslot"></span><button class="icon del" aria-label="Delete step">✕</button>`;
+    li.querySelector('.nslot').replaceWith(noteButton(st));
+    const na = noteArea(st, saveC); if (na) li.querySelector('.tmain').appendChild(na);
+    li.querySelector('input').onchange = e => { st.done = e.target.checked; saveC(); rerender(); };
+    li.querySelector('.ttext').onclick = e => inlineEdit(e.currentTarget, st.text, v => { st.text = v; }, saveC);
+    li.querySelector('.del').onclick = () => { p.steps = p.steps.filter(x => x.id !== st.id); saveC(); rerender(); };
+    ul.appendChild(li);
+  });
+  body.appendChild(addRow('Add a step, e.g. Get 3 bids…', 'cx' + p.id, v => p.steps.push({ id: uid(), text: v, done: false, notes: '' }), saveC));
+  const h = box.querySelector('.proj-head');
+  h.querySelector('.caret').onclick = () => { C.open[p.id] = !C.open[p.id]; saveC(); rerender(); };
+  h.querySelector('.pname').onclick = e => inlineEdit(e.currentTarget, p.name, v => { p.name = v; }, saveC);
+  h.querySelector('.status').onchange = e => { p.status = e.target.value; saveC(); rerender(); };
+  h.querySelector('.clip').onclick = () => pickFiles(p, saveC);
+  h.querySelector('.del').onclick = async () => {
+    if (!(await confirmBox(`Delete CAPEX project “${p.name}” and its files?`))) return;
+    p.attachments.forEach(a => attDel(a.id)); C.projects = C.projects.filter(x => x.id !== p.id); saveC(); rerender();
+  };
+  return box;
+}
+$('cxNew').onclick = async () => {
+  const v = await modal({ title: 'New CAPEX project', fields: [
+    { key: 'name', label: 'Project name', placeholder: 'e.g. Z-building RTU replacement', required: true },
+    { key: 'building', label: 'Building', placeholder: 'e.g. Z, WHC, Tempe' },
+    { key: 'fy', label: 'Fiscal year', placeholder: 'e.g. FY26-27', value: C.f.fy },
+    { key: 'budget', label: 'Budget', placeholder: '$0' },
+    { key: 'start', label: 'Scheduled start', type: 'date' },
+    { key: 'durN', label: 'How long it will take', placeholder: 'e.g. 6' },
+    { key: 'durU', label: 'Unit', type: 'choice', value: 'weeks', options: [{ value: 'days', label: 'Days' }, { value: 'weeks', label: 'Weeks' }, { value: 'months', label: 'Months' }] }
+  ], okText: 'Create project' });
+  if (!v) return;
+  const p = { id: uid(), name: v.name, building: normBldg(v.building), category: '', fy: v.fy, status: 'Planning', priority: 'Medium', budget: num(v.budget), spent: 0, vendor: '', target: '', start: v.start || '', durN: num(v.durN), durU: v.durU || 'weeks', notes: '', attachments: [], steps: [], created: Date.now() };
+  C.projects.push(p); C.open[p.id] = true; saveC(); rerender();
+};
+$('cxCsv').onclick = () => {
+  const head = ['Project', 'Building', 'Category', 'Fiscal year', 'Status', 'Priority', 'Budget', 'Spent', 'Remaining', 'Vendor', 'Scheduled start', 'Duration', 'Estimated finish', 'Target completion', 'Steps done', 'Notes'];
+  const rows = cxFiltered().map(p => [p.name, p.building, p.category, p.fy, p.status, p.priority, num(p.budget), num(p.spent), num(p.budget) - num(p.spent), p.vendor, p.start, durTxt(p), cxEnd(p), p.target, `${p.steps.filter(s => s.done).length}/${p.steps.length}`, p.notes]);
+  download(`capex-${new Date().toISOString().slice(0, 10)}.csv`, [head, ...rows].map(r => r.map(csvCell).join(',')).join('\n'), 'text/csv');
+  toast('CAPEX list downloaded.');
+};
+
+/* ================= WEEKLY ================= */
+const pad2 = n => String(n).padStart(2, '0');
+const isoLocal = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+const fromIso = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+function weekKey(d) { const x = new Date(d); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return isoLocal(x); }
+const wkLabel = k => fromIso(k).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+const addWeeks = (k, n) => { const d = fromIso(k); d.setDate(d.getDate() + 7 * n); return isoLocal(d); };
+
+const B_RULES = [
+  ['WHC', /\bwhc\b|wellness|health center/i],
+  ['Pavilion', /pavilion/i],
+  ['LRC', /\blrc\b|learning resource|library/i],
+  ['Legacy Hall', /legacy/i],
+  ['Tempe', /tempe|sonoran|arizona|\baz\b|phx|phoenix/i],
+  ['Outdoor / Grounds', /parking|\blot\b|grounds|irrigation|sprinkler head|landscap|exterior|outdoor|quad|courtyard|sidewalk|walkway|tree/i],
+  ['Campus-wide', /campus[- ]?wide|all buildings|every building/i],
+];
+function detectBuilding(t) {
+  const m = t.match(/\b(?:bldg\.?|building)\s*([MZDFLT])\b/i) || t.match(/\b([MZDFLT])[\s-]?(?:bldg\.?|building)\b/i) || t.match(/\b([MZDFLT])-?\d{2,3}[A-Z]?\b/) || t.match(/^\s*([MZDFLT])\s*[:\-–]\s/);
+  if (m) return m[1].toUpperCase();
+  for (const [b, re] of B_RULES) if (re.test(t)) return b;
+  return '';
+}
+const C_RULES = [
+  ['HVAC', /\bhvac\b|\ba\/?c\b|air ?con|chiller|boiler|thermostat|\bheat(ing)?\b|cooling|too (hot|cold)|compressor|\brtu\b|\bvav\b|condenser|refrigerant|ductwork|\bfan coil/i],
+  ['Plumbing', /drain|leak|toilet|urinal|sink|faucet|water heater|clog|pipe|flush|plumb|backflow|sewer|eyewash|fountain|bottle filler/i],
+  ['Life Safety', /fire|alarm|extinguisher|\baed\b|code blue|emergency|blue light|evac|smoke|panic|strobe|sprinkler (system|inspection)|camera|cctv/i],
+  ['Electrical / Lighting', /light|lamp|ballast|outlet|breaker|power|electric|fixture|\bled\b|bulb|generator|panel|receptacle/i],
+  ['Doors / Locks / Access', /door|lock|\bkey|badge|access|closer|hinge|card reader|rekey|latch/i],
+  ['Custodial', /clean|trash|spill|janitor|custodial|restock|paper towel|soap|vomit|odor|smell|vacuum|mop|y&n/i],
+  ['Grounds', /landscap|irrigation|lawn|weed|mow|sweep|tree|shrub|gardener|leaf|leaves/i],
+  ['Roof / Envelope', /roof|window|glass|gutter|skylight|stucco|siding|waterproof/i],
+  ['Interior repairs', /paint|ceiling|tile|drywall|carpet|floor|wall|stain|patch|baseboard|cabinet|counter|blinds/i],
+  ['Moves / Events / Setup', /move|furniture|desk|chair|set ?up|event|table|deliver|haul|assemble|install shelf/i],
+  ['IT / AV', /projector|\bav\b|\btv\b|screen|wifi|wi-fi|network|monitor|speaker|mic\b|zoom room/i],
+  ['Pest', /pest|rodent|\brat\b|mice|mouse|ant\b|ants|roach|bee|wasp|termite/i],
+  ['Vendor / Admin', /quote|invoice|\bpo\b|vendor|contract|proposal|bid|coi|meeting|schedule|report/i],
+];
+function detectCat(t) { for (const [c, re] of C_RULES) if (re.test(t)) return c; return 'Other'; }
+
+$('wkDate').value = isoLocal(new Date());
+const wkDateNote = () => { $('wkDateNote').textContent = $('wkDate').value ? `Saves as the week of Monday, ${wkLabel(weekKey(fromIso($('wkDate').value)))}` : ''; };
+$('wkDate').onchange = wkDateNote; wkDateNote();
+
+$('wkAdd').onclick = () => {
+  const raw = $('wkPaste').value; if (!raw.trim()) return msg('Paste at least one line first.', 'wkMsg');
+  if (!$('wkDate').value) return msg('Pick the week first.', 'wkMsg');
+  const week = weekKey(fromIso($('wkDate').value));
+  let ctx = '', n = 0, unknown = 0;
+  raw.split(/\r?\n/).forEach(line => {
+    let t = line.replace(/^\s*(?:[-*•▪◦]|\d+[.)]|\[[ x]\])\s*/i, '').trim();
+    if (!t) { ctx = ''; return; }
+    const bare = t.replace(/:$/, '').replace(/\b(?:bldg\.?|building)\b/ig, '').trim().toLowerCase();
+    const isHeader = (/:$/.test(t) && t.length < 40) || [...BUILDINGS, ...W.entries.map(e => e.building)].some(x => x && x.toLowerCase() === bare);
+    if (isHeader) { const b = detectBuilding(t.replace(/:$/, '') + ' ') || detectBuilding('Building ' + t.replace(/:$/, '')) || (bare && normBldg(t.replace(/:$/, ''))); if (b) { ctx = b; return; } }
+    const building = detectBuilding(t) || ctx;
+    const category = detectCat(t);
+    if (!building || category === 'Other') unknown++;
+    W.entries.push({ id: uid(), text: t, week, building, category, done: false, notes: '', created: Date.now() });
+    n++;
+  });
+  $('wkPaste').value = '';
+  W.filter = null; saveW(); rerender();
+  msg(`Added ${n} tasks to the week of ${wkLabel(week)}.` + (unknown ? ` ${unknown} need a building or category; use “Tag unknowns with AI” or set them by hand.` : ''), 'wkMsg');
+};
+
+function weekRange(n = 12) {
+  const keys = W.entries.map(e => e.week).sort();
+  const last = keys.length ? keys[keys.length - 1] : weekKey(new Date());
+  return Array.from({ length: n }, (_, i) => addWeeks(last, i - (n - 1)));
+}
+function wkFiltered() {
+  const f = W.filter, q = ($('wkSearch').value || '').toLowerCase();
+  return W.entries.filter(e => (!f || ((!f.dim || (e[f.dim] || 'Unknown') === f.value) && (!f.week || e.week === f.week))) && (!q || (e.text + ' ' + e.notes).toLowerCase().includes(q)));
+}
+function renderWeekly() {
+  const weeks = weekRange(12), E = W.entries;
+  const lastWk = weeks[weeks.length - 1];
+  const inLast = E.filter(e => e.week === lastWk);
+  const prev4 = weeks.slice(-5, -1);
+  const avg4 = prev4.length ? E.filter(e => prev4.includes(e.week)).length / 4 : 0;
+  $('stats').textContent = `${E.length} tasks across ${new Set(E.map(e => e.week)).size} weeks`;
+  $('wkAdd').textContent = 'Add to week';
+
+  const topB = Object.entries(count(inLast, 'building')).filter(([k]) => k !== 'Unknown').sort((a, b) => b[1] - a[1])[0];
+  const topC = Object.entries(count(inLast, 'category')).filter(([k]) => k !== 'Other').sort((a, b) => b[1] - a[1])[0];
+  const delta = avg4 ? Math.round((inLast.length - avg4) / avg4 * 100) : 0;
+  $('wkKpis').innerHTML = E.length ? `
+    <div class="kpi"><b>${inLast.length}</b><span>Tasks, week of ${wkLabel(lastWk)}</span></div>
+    <div class="kpi ${delta > 25 ? 'warn' : ''}"><b>${avg4 ? (delta > 0 ? '+' : '') + delta + '%' : '—'}</b><span>vs prior 4-week average (${avg4.toFixed(1)})</span></div>
+    <div class="kpi"><b>${topB ? esc(topB[0]) : '—'}</b><span>Busiest building last week${topB ? ` (${topB[1]})` : ''}</span></div>
+    <div class="kpi"><b style="font-size:20px">${topC ? esc(topC[0]) : '—'}</b><span>Top category last week${topC ? ` (${topC[1]})` : ''}</span></div>
+    <div class="kpi"><b>${inLast.filter(e => !e.done).length}</b><span>Still open from last week</span></div>` : '';
+
+  document.querySelectorAll('#wkDim button').forEach(b => { b.setAttribute('aria-pressed', String(b.dataset.dim === W.dim)); b.onclick = () => { W.dim = b.dataset.dim; saveW(); rerender(); }; });
+  const allB = () => { const used = [...new Set(E.map(e => e.building).filter(Boolean))]; return [...BUILDINGS.filter(b => used.includes(b)), ...used.filter(b => !BUILDINGS.includes(b)).sort()]; };
+  const dim = W.dim, vals = dim === 'building' ? [...allB(), 'Unknown'] : CATS;
+  const grid = {}; let max = 0;
+  E.forEach(e => { if (!weeks.includes(e.week)) return; const k = e[dim] || (dim === 'building' ? 'Unknown' : 'Other'); grid[k] = grid[k] || {}; grid[k][e.week] = (grid[k][e.week] || 0) + 1; max = Math.max(max, grid[k][e.week]); });
+  const rows = vals.filter(v => grid[v]);
+  const f = W.filter;
+  $('wkHeat').innerHTML = rows.length ? `<table class="heat"><thead><tr><th></th>${weeks.map(w => `<th>${wkLabel(w)}</th>`).join('')}<th>Total</th></tr></thead><tbody>` +
+    rows.map(v => { const tot = weeks.reduce((s, w) => s + (grid[v][w] || 0), 0);
+      return `<tr><th class="rh ${f && f.dim === dim && f.value === v && !f.week ? 'sel' : ''}" data-v="${esc(v)}">${esc(v)}</th>` + weeks.map(w => {
+        const n = grid[v][w] || 0, a = n ? 0.12 + 0.88 * (n / max) : 0;
+        const dark = a > 0.55 && !matchMedia('(prefers-color-scheme: dark)').matches;
+        return `<td class="${n ? '' : 'z'} ${f && f.dim === dim && f.value === v && f.week === w ? 'sel' : ''}" data-v="${esc(v)}" data-w="${w}" style="background:${n ? `rgba(var(--heat),${a.toFixed(2)})` : 'var(--sub)'};${dark ? 'color:#fff' : ''}" title="${esc(v)}, week of ${wkLabel(w)}: ${n}">${n || ''}</td>`;
+      }).join('') + `<td class="tot">${tot}</td></tr>`; }).join('') + '</tbody></table>'
+    : '<div class="empty" style="padding:0">Paste a week of tasks to build the heat map.</div>';
+  $('wkHeat').querySelectorAll('td[data-w]').forEach(td => td.onclick = () => { if (td.classList.contains('z')) return; W.filter = { dim, value: td.dataset.v, week: td.dataset.w }; saveW(); rerender(); $('wkList').scrollIntoView({ behavior: 'smooth' }); });
+  $('wkHeat').querySelectorAll('th.rh').forEach(th => th.onclick = () => { W.filter = { dim, value: th.dataset.v }; saveW(); rerender(); $('wkList').scrollIntoView({ behavior: 'smooth' }); });
+
+  const totals = weeks.map(w => E.filter(e => e.week === w).length), tmax = Math.max(1, ...totals);
+  $('wkChart').innerHTML = totals.map((n, i) => `<div class="col ${i === weeks.length - 1 ? 'cur' : ''}" title="Week of ${wkLabel(weeks[i])}: ${n}"><span class="n">${n || ''}</span><div class="b" style="height:${n / tmax * 80}%"></div><span class="l">${wkLabel(weeks[i]).replace(/ /, '\u00a0')}</span></div>`).join('');
+
+  const movers = [];
+  [['category', CATS], ['building', allB()]].forEach(([d, list]) => list.forEach(v => {
+    const cur = inLast.filter(e => e[d] === v).length;
+    const base = E.filter(e => prev4.includes(e.week) && e[d] === v).length / 4;
+    if (Math.abs(cur - base) >= 2 && (base === 0 || Math.abs(cur - base) / base >= 0.5)) movers.push({ v, cur, base, diff: cur - base });
+  }));
+  movers.sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff));
+  $('wkMovers').innerHTML = movers.length ? movers.slice(0, 8).map(m => `<li><span>${esc(m.v)}</span><span class="${m.diff > 0 ? 'up' : 'down'}">${m.diff > 0 ? '▲' : '▼'} ${m.cur} vs ${m.base.toFixed(1)} avg</span></li>`).join('')
+    : `<li class="empty" style="padding:4px 0">${E.length ? 'No big swings last week.' : 'Needs at least two weeks of data.'}</li>`;
+
+  const rec = {};
+  E.filter(e => e.building && e.category !== 'Other' && e.category !== 'Vendor / Admin').forEach(e => { const k = e.building + '|' + e.category; (rec[k] = rec[k] || []).push(e); });
+  const recList = Object.entries(rec).map(([k, es]) => ({ k, es, weeks: new Set(es.map(e => e.week)).size })).filter(r => r.weeks >= 2).sort((a, b) => b.weeks - a.weeks || b.es.length - a.es.length);
+  $('wkRecur').innerHTML = recList.length ? recList.slice(0, 10).map(r => { const [b, c] = r.k.split('|');
+    const samp = r.es.slice().sort((x, y) => y.week.localeCompare(x.week)).slice(0, 3).map(e => esc(e.text)).join('  /  ');
+    return `<li><div style="display:flex;gap:8px"><span style="flex:1"><b>${esc(b)}</b>, ${esc(c)}</span><span class="${r.weeks >= 3 ? 'up' : ''}">${r.es.length} tasks in ${r.weeks} weeks</span></div><div class="samp">${samp}</div></li>`; }).join('')
+    : `<li class="empty" style="padding:4px 0">${E.length ? 'Nothing repeating across weeks yet.' : 'Shows up once you have a few weeks pasted in.'}</li>`;
+
+  $('wkAI').innerHTML = W.ai ? esc(W.ai) + `<div class="count" style="margin-top:8px">Analyzed ${new Date(W.aiAt).toLocaleString()}</div>`
+    : '<span class="count">Claude reads your recent weeks and writes up trends, repeat problems, and what to look into. Run it after pasting a new week.</span>';
+
+  const unk = E.filter(e => !e.building || e.category === 'Other').length;
+  $('wkTag').hidden = !unk; $('wkTag').textContent = `Tag ${unk} unknown${unk > 1 ? 's' : ''} with AI`;
+
+  const list = wkFiltered();
+  $('wkCount').textContent = list.length !== E.length ? `${list.length} of ${E.length}` : E.length || '';
+  $('wkFilterChip').innerHTML = f ? `<span class="fchip">${esc(f.value)}${f.week ? ', week of ' + wkLabel(f.week) : ''}</span> <button class="linkbtn" id="wkClearF">Show all</button>` : '';
+  if ($('wkClearF')) $('wkClearF').onclick = () => { W.filter = null; saveW(); rerender(); };
+  const box = $('wkList'); box.innerHTML = '';
+  if (!list.length) { box.innerHTML = `<div class="card"><div class="empty">${E.length ? 'No tasks match.' : 'Nothing here yet. Paste your first week at the top.'}</div></div>`; return; }
+  const byWeek = {}; list.forEach(e => (byWeek[e.week] = byWeek[e.week] || []).push(e));
+  const LIMIT = 400; let shown = 0;
+  Object.keys(byWeek).sort().reverse().forEach(w => {
+    if (shown >= LIMIT) return;
+    const card = document.createElement('div'); card.className = 'card';
+    const items = byWeek[w];
+    card.innerHTML = `<div class="wk-head"><span>Week of ${wkLabel(w)}</span><span class="count" style="flex:0">${items.filter(e => e.done).length}/${items.length} done</span></div><ul class="tasks"></ul>`;
+    const ul = card.querySelector('ul');
+    items.sort((a, b) => (a.building || 'zz').localeCompare(b.building || 'zz') || a.category.localeCompare(b.category)).forEach(e => { if (shown++ < LIMIT) ul.appendChild(wkRow(e)); });
+    box.appendChild(card);
+  });
+  if (shown > LIMIT) box.insertAdjacentHTML('beforeend', `<div class="empty">Showing the first ${LIMIT}. Use the heat map or search to narrow it down.</div>`);
+}
+function count(list, k) { const o = {}; list.forEach(e => { const v = e[k] || 'Unknown'; o[v] = (o[v] || 0) + 1; }); return o; }
+function wkRow(e) {
+  const li = document.createElement('li'); li.className = 'task' + (e.done ? ' is-done' : '');
+  li.innerHTML = `<input type="checkbox" ${e.done ? 'checked' : ''} aria-label="Mark done">
+    <div class="tmain"><div class="ttext">${esc(e.text)}</div></div>
+    <input class="mini" data-k="building" aria-label="Building" value="${esc(e.building)}" placeholder="Building" style="width:96px">
+    <select class="mini" data-k="category" aria-label="Category">${CATS.map(o => `<option ${o === e.category ? 'selected' : ''}>${o}</option>`).join('')}</select>
+    <span class="nslot"></span>
+    <button class="icon del" aria-label="Delete">✕</button>`;
+  li.querySelector('.nslot').replaceWith(noteButton(e));
+  const na = noteArea(e, saveW); if (na) li.querySelector('.tmain').appendChild(na);
+  li.querySelector('input').onchange = ev => { e.done = ev.target.checked; saveW(); rerender(); };
+  li.querySelectorAll('[data-k]').forEach(s => s.onchange = () => { e[s.dataset.k] = s.dataset.k === 'building' ? normBldg(s.value) : s.value; saveW(); rerender(); });
+  li.querySelector('input[data-k=building]').onkeydown = ev => { if (ev.key === 'Enter') ev.target.blur(); };
+  li.querySelector('.ttext').onclick = ev => inlineEdit(ev.currentTarget, e.text, v => { e.text = v; }, saveW);
+  li.querySelector('.del').onclick = () => { W.entries = W.entries.filter(x => x.id !== e.id); saveW(); rerender(); };
+  return li;
+}
+let searchT; $('wkSearch').oninput = () => { clearTimeout(searchT); searchT = setTimeout(() => { rerender(); $('wkSearch').focus(); }, 200); };
+
+$('wkTag').onclick = async () => {
+  const todo = W.entries.filter(e => !e.building || e.category === 'Other');
+  const btn = $('wkTag'); btn.disabled = true;
+  let fixed = 0;
+  try {
+    for (let s = 0; s < Math.min(todo.length, 200); s += 25) {
+      btn.textContent = `Tagging ${s + 1}–${Math.min(s + 25, todo.length)}…`;
+      const batch = todo.slice(s, s + 25);
+      const out = parseJSON(await askClaude(`Tag university facilities work-order lines with a building and a category.
+Known buildings (prefer these exact names; use another short name only if the line clearly names a different building; "" if unknown): ${[...new Set([...BUILDINGS, ...W.entries.map(e => e.building).filter(Boolean)])].join(', ')}
+Categories (use exactly): ${CATS.join(', ')}
+Single letters M, Z, D, F, L, T are building names; room numbers like Z-104 mean building Z.
+
+Lines:
+${batch.map((e, i) => `${i}. ${e.text}`).join('\n')}
+
+Respond with ONLY JSON, no prose: {"tags":[{"i":0,"building":"...","category":"..."}]}`));
+      (out.tags || []).forEach(t => { const e = batch[t.i]; if (!e) return;
+        if (!e.building && t.building && String(t.building).trim()) { e.building = normBldg(t.building); fixed++; }
+        if (e.category === 'Other' && CATS.includes(t.category) && t.category !== 'Other') { e.category = t.category; fixed++; } });
+    }
+    saveW(); toast(`Filled in ${fixed} tag${fixed === 1 ? '' : 's'}.`);
+  } catch (err) { toast('Tagging failed. Nothing changed — try again.'); }
+  btn.disabled = false; rerender();
+};
+
+$('wkAnalyze').onclick = async () => {
+  if (!W.entries.length) return toast('Paste at least one week first.');
+  const btn = $('wkAnalyze'); btn.disabled = true; btn.textContent = 'Analyzing…';
+  const weeks = weekRange(8), E = W.entries.filter(e => weeks.includes(e.week));
+  const table = d => { const vals = [...new Set(E.map(e => e[d] || 'Unknown'))];
+    return `${d} | ` + weeks.map(wkLabel).join(' | ') + '\n' + vals.map(v => v + ' | ' + weeks.map(w => E.filter(e => e.week === w && (e[d] || 'Unknown') === v).length).join(' | ')).join('\n'); };
+  const recent = E.slice().sort((a, b) => b.week.localeCompare(a.week)).slice(0, 160)
+    .map(e => `[${wkLabel(e.week)}|${e.building || '?'}|${e.category}${e.done ? '' : '|open'}] ${e.text.slice(0, 110)}${e.notes ? ' (note: ' + e.notes.slice(0, 60) + ')' : ''}`).join('\n');
+  const prompt = `You are helping the AVP of Physical Plant at a small health-sciences university spot patterns in weekly maintenance work.
+
+Counts by building per week:
+${table('building')}
+
+Counts by category per week:
+${table('category')}
+
+Recent task lines (newest first):
+${recent}
+
+Write a plain-text briefing, no markdown symbols, under 250 words, with these four short sections, each starting with its name on its own line:
+Trends
+Recurring problems (name the building and the specific issue, e.g. the same drain or AC unit coming back, and how many weeks)
+Watch list
+Suggested actions (practical: PM schedule changes, vendor escalation, capital project candidates)
+Be specific and cite counts. If the data is thin, say so.`;
+  try { W.ai = (await askClaude(prompt)).replace(/[*#]+/g, ''); W.aiAt = Date.now(); saveW(); }
+  catch (e) { toast('Analysis failed. Try again.'); }
+  btn.disabled = false; btn.textContent = 'Analyze trends'; rerender();
+};
+$('wkCsv').onclick = () => {
+  const rows = W.entries.slice().sort((a, b) => a.week.localeCompare(b.week)).map(e => [e.week, e.building, e.category, e.text, e.done ? 'Done' : 'Open', e.notes]);
+  download(`weekly-tasks-${new Date().toISOString().slice(0, 10)}.csv`, [['Week of', 'Building', 'Category', 'Task', 'Status', 'Notes'], ...rows].map(r => r.map(csvCell).join(',')).join('\n'), 'text/csv');
+  toast('Weekly tasks downloaded.');
+};
+$('wkClearWeek').onclick = async () => {
+  const weeks = [...new Set(W.entries.map(e => e.week))].sort().reverse();
+  if (!weeks.length) return toast('No weeks to delete.');
+  const v = await modal({ title: 'Delete a week', text: 'Removes every task saved under that week.', fields: [{ key: 'w', label: 'Week', type: 'select', options: weeks.map(w => `Week of ${wkLabel(w)} (${w})`) }], okText: 'Delete week', danger: true });
+  if (!v) return;
+  const w = v.w.match(/\((\d{4}-\d\d-\d\d)\)/)[1];
+  const n = W.entries.filter(e => e.week === w).length;
+  W.entries = W.entries.filter(e => e.week !== w); W.filter = null; saveW(); rerender(); toast(`Deleted ${n} tasks.`);
+};
+
+/* ================= backup ================= */
+document.querySelectorAll('.exportAll').forEach(b => b.onclick = async () => {
+  const backup = { version: 2, tracker: S, capex: C, weekly: W, files: {} };
+  for (const o of allOwners()) for (const a of o.attachments || []) { const d = await attGet(a.id); if (d) backup.files[a.id] = d; }
+  download(`scu-tracker-backup-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(backup), 'application/json');
+  toast('Backup downloaded: all three tabs plus attachments.');
+});
+document.querySelectorAll('.importAll').forEach(b => b.onclick = () => { $('importFile').value = ''; $('importFile').click(); });
+$('importFile').onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  let d;
+  try { d = JSON.parse(await f.text()); if (!d.tracker && !Array.isArray(d.tasks)) throw 0; }
+  catch { return toast('That file isn’t a tracker backup.'); }
+  if (!(await confirmBox('Replace everything in all tabs with this backup?', 'Replace'))) return;
+  for (const [id, data] of Object.entries(d.files || {})) { try { await attPut(id, data); } catch (err) {} }
+  const tab = S.tab;
+  if (d.tracker) { S = Object.assign({ collapsed: {}, notesOpen: {}, showDone: false }, d.tracker); C = Object.assign({ projects: [], f: {}, open: {} }, d.capex || {}); W = Object.assign({ entries: [], dim: 'building' }, d.weekly || {}); }
+  else { delete d.files; S = Object.assign({ collapsed: {}, notesOpen: {}, showDone: false }, d); }
+  S.tab = tab; migrate(); save(); saveC(); saveW(); rerender(); toast('Backup restored.');
+};
+
+window.__unlocked.then(() => load()).then(() => { rerender(); if (S.tab === 'my') quick.focus(); });
+</script>
+</body></html>

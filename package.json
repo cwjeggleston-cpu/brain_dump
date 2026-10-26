@@ -1,0 +1,8 @@
+{
+  "name": "scu-physical-plant-tracker",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@netlify/blobs": "^11.1.6"
+  }
+}
